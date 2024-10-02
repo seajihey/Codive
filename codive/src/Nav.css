@@ -1,0 +1,70 @@
+@font-face {
+    font-weight: 300;
+    font-family: "Pretendard-Light";
+    src: url("./fonts/Pretendard-Light.otf") format("truetype");
+
+}
+@font-face {
+    font-weight: 400;
+    font-family: "Pretendard-Regular";
+    src: url("./fonts/Pretendard-Regular.otf") format("truetype");
+
+}
+@font-face {
+    font-weight: 500;
+    font-family: "Pretendard-Medium";
+    src: url("./fonts/Pretendard-Medium.otf") format("truetype");
+
+}
+@font-face {
+    font-weight: 600;
+    font-family: "Pretendard-SemiBold";
+    src: url("./fonts/Pretendard-SemiBold.otf") format("truetype");
+
+}
+@font-face {
+    font-weight: 700;
+    font-family: "Pretendard-Bold";
+    src: url("./fonts/Pretendard-Bold.otf") format("truetype");
+
+}
+@font-face {
+    font-weight: 800;
+    font-family: "Pretendard-ExtraBold";
+    src: url("./fonts/Pretendard-ExtraBold.otf") format("truetype");
+
+}
+
+    
+#Nav {
+    height: 7vh;
+    width: 100vw;
+    color: black;
+    font-size: 0.9rem;
+    padding: 0 6.45vw;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    font-family: "Pretendard-Bold";
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+.logo{
+
+}
+.settings{
+    display: flex;
+    gap: 1vw;
+    width: fit-content;
+}
+    .timer, .restPeople {
+        display: flex;
+        width: fit-content;
+
+    }
+
+    .settingsIcon, .settingsText, .settingsNum {
+        margin: 0 0.5vw;
+        width: fit-content;
+
+    }
