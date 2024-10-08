@@ -183,3 +183,35 @@
     width: 28vw;
     text-align: left;
 }
+
+.savAndMainBtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 5rem; /* Add some margin if necessary */
+}
+
+.mainBtn, .saveBtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 0.0625rem 0.3625rem 0px rgba(0, 0, 0, 0.24);
+    width: 20vw;
+    height: 6.5vh;
+    font-weight: bold;
+    border-radius: 1rem;
+    margin: 0 1rem; 
+    background-color: #ffffff;
+    cursor: pointer; 
+}
+
+.btnText {
+    font-family: "Pretendard-Regular", sans-serif;
+    font-size: 1rem; 
+    color: black;
+}
+
+.btnIcon {
+    margin-left: 0.5rem; 
+    color: black;
+}

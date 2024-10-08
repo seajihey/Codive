@@ -3,6 +3,8 @@ import '../Report.css';
 
 import { FaCrown } from "react-icons/fa";
 import { LuCat } from "react-icons/lu";
+import { IoHome } from "react-icons/io5";
+import { BsFillSave2Fill } from "react-icons/bs";
 
 function Report() {
 
@@ -93,6 +95,16 @@ function Report() {
               <div className="playTime">0.456789 seconds</div>
             </div>
             
+          </div>
+        </div>
+        <div className='savAndMainBtn'>
+          <div className='mainBtn'>
+            <div className='btnText'>메인화면</div>
+            <div className='btnIcon'><IoHome size = "20px"/></div>
+          </div>
+          <div className='saveBtn'>
+            <div className='btnText'>보고서 저장</div>
+            <div className='btnIcon'><BsFillSave2Fill size="20px"/></div>
           </div>
         </div>
       </div>
