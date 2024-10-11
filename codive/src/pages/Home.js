@@ -20,8 +20,22 @@ function Home() {
 
   return (
     <div className="home-container">
-      <button onClick={handleOpenPopup}>방 입장</button>
-      <button onClick={handleOpenPopup}>방 생성</button>
+      {/*로고*/}
+      <header className="header">
+        <div className="logo">코디브<br />logo</div>
+      </header>
+
+      <main className="main-content">
+        <h1 className = "main-title">Get Start Online Coding<br /> With your friends</h1>
+        <p className="description">
+          코디브(Codive)는 실시간으로 함께 코딩문제를 풉니다. <br />
+          AI가 제공하는 실시간 피드백과 문제를 푼 뒤 제공되는 평가보고서를 통해 약점을 보완하세요.
+        </p>
+        <div className="button-container">
+          <button className="button" onClick={handleOpenPopup}>그룹 생성</button>
+          <button className="button" onClick={handleOpenPopup}>그룹 참가</button>
+        </div>
+      </main>
 
       {showPopup && (
         <div className="popup">
