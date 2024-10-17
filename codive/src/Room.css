@@ -1,0 +1,121 @@
+.number { 
+  margin-left: 6vw;
+  margin-top: 1.5vh;
+  font-family: "Pretendard-Bold";
+}
+.problem {
+  margin-left: 6vw;
+  margin-top: 1.5vh;
+  font-family: "Pretendard-Regular";
+}
+
+.nextButton {
+  width: 8vw;
+  height: 5vh;
+  margin-left: 60vw;
+  border-radius: 1.5vh;
+  border: 1px solid rgb(180, 180, 180);
+  font-family: "Pretendard-Regular";
+  margin-top: -5vh;
+  background-color: #3100AE;
+  color: white;
+  white-space: nowrap;
+}
+
+.ai-box {
+  border: 1px solid #ccc;
+  padding: 1.5vh;
+  margin-top: 1.5vh;
+  height: 25vh;
+  width: 85%;
+  overflow: hidden;
+  font-family: "Pretendard-Regular";
+  margin-left: 6vw;
+}
+.aiBoxTitle {
+  font-family: "Pretendard-Bold";
+  margin-left: 6vw;
+  font-size: 2.5vh;
+}
+
+.scrollable-content {
+  max-height: 20vh;
+  overflow-y: scroll;
+  font-family: "Pretendard-Regular";
+}
+
+.errorButton, .aiButton {
+  background: none;
+  border: none;
+  color: black;
+  cursor: pointer;
+  font-size: 2vh;
+  display: inline-flex;
+  align-items: center;
+  padding: 1vh 0;
+  font-family: "Pretendard-Regular";
+  margin-top: 3vh;
+}
+.errorButton {
+  margin-left: 6vw;
+}
+.errorButton .icon, .aiButton .icon {
+  margin-right: 0.5vw;
+  font-size: 2.5vh;
+}
+
+.exitButtonContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 3.5vw;
+  margin-top: 3vh;
+  margin-left: 45vw;
+}
+
+.exitButton {
+  background: none;
+  border: none;
+  color: black;
+  cursor: pointer;
+  font-size: 2vh;
+  display: inline-flex;
+  align-items: center;
+  font-family: "Pretendard-Regular";
+  white-space: nowrap;
+}
+
+.exitButton .icon {
+  margin-right: 0.5vw;
+  font-size: 2.5vh;
+}
+
+.codeContainer {
+  display: flex;
+  width: 85%;
+  margin-left: 6vw;
+  margin-top: 4vh;
+  font-family: "Pretendard-Regular";
+}
+
+.lineNumbers {
+  background-color: #f0f0f0;
+  padding: 1.5vh;
+  border-right: 1px solid #ccc;
+  text-align: right;
+  user-select: none;
+  color: gray;
+  font-size: 2vh;
+  font-family: "Pretendard-Regular";
+}
+
+.codeInput {
+  width: 100%;
+  height: 55vh;
+  padding: 1.5vh;
+  font-size: 2vh;
+  border: 1px solid gray;
+  border-left: none;
+  resize: none;
+  font-family: "Pretendard-Regular";
+  outline: none;
+}
