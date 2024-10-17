@@ -1,42 +1,320 @@
+/* src/Home.css */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css");
+
+
+/* 애니메이션 코드 */
+:root{
+  /**/
+  /*other default setting ...*/
+  /**/
+    --secondary-glow: conic-gradient(
+      from 10deg at 50% 50%,
+      #eb7494 0deg,
+      #ae77b2 55deg,
+      #97b5da 120deg,
+      #0099ca 160deg,
+      transparent 360deg
+    );
+  
+    --third-glow: conic-gradient(
+      from 90deg at 50% 50%,
+      #ff8b7e 0deg,
+      #e24e6b 160deg,
+      #7ed2da 120deg,
+      #8bdce0 55deg,
+      transparent 360deg
+    );
+  }
+
+  body::before,
+  body::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  opacity:0.8
+  }
+
+  body::before {
+    background: var(--third-glow);
+    border-radius: 50%;
+    width: 50vw;
+    height: 50vw;
+    margin-left: -200px;
+    filter:blur(90px);  
+    top: calc(50vh - 50vw/2);
+    left: calc(50vw );
+    animation: animateBefore 7s cubic-bezier(0.47, 0, 0.745, 0.715) infinite;
+  }
+  
+  body::after {
+    background: var(--secondary-glow);
+    border-radius: 50%;
+    width: 500px;
+    height: 700px;
+    filter:blur(90px);
+    top: calc(50vh - 50vw/2);
+    left: calc(50vw - 50vw/2);
+    animation: animateAfter 7s cubic-bezier(0.47, 0, 0.745, 0.715) infinite;
+  }
+
+  @keyframes animateBefore {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(200px) scale(0.8);
+  
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes animateAfter{
+    0% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(-250px) scale(1.2);
+  
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif; 
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #fff;
+}
+
 .home-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-  }
-  
-  button {
-    margin: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  
-  .popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .popup-inner {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .popup-inner h2 {
-    margin-top: 0;
-  }
-  
-  .popup-inner button {
-    margin: 10px;
-  }
-  
+  text-align: center;
+  width: 100%;
+  max-width: 1200px; /* 최대 너비 */
+  padding: 0 1.0417vw; /* 좌우 패딩 */
+}
+
+/* 로고 */
+.header {
+  position: absolute;
+  top: 2.4075vh; /* 위에서의 위치 */
+  left: 2.7083vw; /* 왼쪽에서의 위치 */
+}
+
+.logo {
+  font-size: 1.2188vw; /* 로고 폰트 크기 */
+  font-weight: bold;
+}
+
+.main-title {
+  font-size: 4.7385vw; /* 제목 폰트 크기 */
+  font-weight: 900;
+  margin-bottom: 5.4167vh; /* 제목 아래 여백 */
+  color: #000;
+  text-shadow: 0px 0.5vh 0.2033vh #b3b3b3; /* 그림자 효과 */
+}
+
+.description {
+  font-size: 1.2188vw; /* 설명 폰트 크기 */
+  color: #555;
+  margin-bottom: 10.8333vh; /* 설명 아래 여백 */
+  line-height: 1.7;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 13%; /* 버튼 간의 간격 */
+}
+
+.button {
+  background-color: #fff;
+  border: none;
+  padding: 1.8958vh 3.7240vw; /* 버튼 내부 패딩 */
+  font-size: 1.1510vw; /* 버튼 텍스트 폰트 크기 */
+  font-weight: normal;
+  border-radius: 30px; /* 둥근 모서리 */
+  box-shadow: 0 0.5417vh 1.625vh rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  cursor: pointer; /* 커서 스타일 */
+  transition: all 0.3s ease; /* 호버 효과를 위한 부드러운 전환 */
+}
+
+.button:hover {
+  background-color: #f0f0f0; /* 호버 시 배경색 */
+  box-shadow: 0 0.8125vh 2.4375vh rgba(0, 0, 0, 0.15); /* 호버 시 그림자 효과 */
+}
+
+/* 팝업 전체 스타일 */
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.popup-inner {
+  background: #fff;
+  padding: 4.8148vh; /* 내부 패딩 */
+  border-radius: 15px; /* 둥근 모서리 */
+  width: 27.0833vw; /* 고정 너비 */
+  height: 70vh; /* 고정 높이 */
+  box-shadow: 0 0.5417vh 2.4375vh rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.close-btn {
+  position: absolute;
+  top: 3.6111vh; /* 위에서의 위치 */
+  right: 1.6928vw; /* 오른쪽에서의 위치 */
+  font-size: 2.4375vw; /* 닫기 버튼 폰트 크기 */
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.popup-inner h2 {
+  font-size: 1.3542vw; /* 제목 폰트 크기 */
+  margin-bottom: 0.6771vh; /* 제목 아래 여백 */
+  font-weight: bold;
+  text-align: left;
+}
+
+.popup-inner p {
+  font-size: 1.0833vw; /* 문단 폰트 크기 */
+  color: #555;
+  margin: 2.4075vh 0; /* 수직 여백 */
+  text-align: left;
+}
+
+.input-container {
+  margin-top: 3.3855vh; /* 입력 필드 상단 여백 */
+  position: relative;
+}
+
+.input-container label {
+  font-size: 0.9474vw; /* 라벨 폰트 크기 */
+  color: #555;
+  display: block;
+  margin-bottom: 0.8vh; /* 라벨 아래 여백 */
+  text-align: left;
+}
+
+.input-container input {
+  width: 100%;
+  border: none;
+  border-bottom: 0.0677vh solid #e0e0e0; /* 아래 테두리 */
+  padding: 0.6771vh 0; /* 상하 패딩 */
+  font-size: 1.0833vw; /* 입력 텍스트 폰트 크기 */
+  outline: none;
+  background: transparent;
+}
+
+input:focus {
+  border-bottom-color: #000; /* 포커스 시 아래 테두리 색상 */
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.4075vh; /* 버튼 컨테이너 상단 여백 */
+}
+
+.popup-button {
+  padding: 2.0313vh 2.7083vw; /* 팝업 버튼 내부 패딩 */
+  font-size: 1.0833vw; /* 팝업 버튼 텍스트 폰트 크기 */
+  background-color: #B5B5B5; /* 배경색 */
+  color: #fff; /* 글자색 */
+  border: none;
+  border-radius: 7px; /* 둥근 모서리 */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  position: absolute;
+  bottom: 6.0493vh; /* 아래에서의 위치 */
+  transform: translateX(-50%); /* 수평 중앙 정렬 */
+  width: calc(100% - 4.1667vw); /* 전체 너비 - 80px */
+}
+
+/* 오류 상태 */
+.input-container.error label {
+  color: #D95959; /* 오류 시 라벨 색상 */
+}
+
+.input-container.error input {
+  border-bottom-color: #e4a7a7; /* 오류 시 아래 테두리 색상 */
+}
+
+.popup-inner .error-message {
+  color: #D95959; /* 오류 메시지 색상 */
+  font-size: 0.7437vw; /* 오류 메시지 폰트 크기 */
+  margin-top: 1.3vh; /* 오류 메시지 상단 여백 */
+}
+
+/* 옵션 컨테이너 */
+.option-container {
+  display: flex;
+  align-items: center;
+  margin-top: 6.0487vh; /* 옵션 컨테이너 상단 여백 */
+}
+
+/* 기본 체크박스 숨기기 */
+.custom-checkbox {
+  display: none;
+}
+
+/* 체크박스가 선택되지 않은 상태 */
+.custom-checkbox-label {
+  display: inline-block;
+  width: 1.3542vw; /* 체크박스 너비 */
+  height: 1.3542vw; /* 체크박스 높이 */
+  background-color: #fff;
+  border: 1px solid #000;
+  border-radius: 7px; /* 둥근 모서리 */
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-right: 0.6771vh; /* 체크박스와 텍스트 사이 간격 */
+}
+
+/* 체크박스가 선택된 상태에서 스타일 적용 */
+.custom-checkbox:checked + .custom-checkbox-label {
+  background-color: #fff;
+}
+
+/* 체크박스 안 검은 동그라미(선택된 상태) */
+.custom-checkbox-label::before {
+  content: '';
+  position: absolute;
+  width: 0.9487vw; /* 내부 동그라미 너비 */
+  height: 0.9487vw; /* 내부 동그라미 높이 */
+  background-color: #000; /* 내부 동그라미 색상 */
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.custom-checkbox:checked + .custom-checkbox-label::before {
+  opacity: 1;
+}
