@@ -53,7 +53,7 @@ function Room() {
   };
 
   return (
-    <>
+    <div className="room-container">
       <div className="exitButtonContainer">
         <button className="exitButton" onClick={exitRoom}>
           <FaDoorOpen className="icon" /> 방 나가기
@@ -107,7 +107,7 @@ function Room() {
         </div>
       )}
 
-    </>
+    </div>
   );
 }
 
