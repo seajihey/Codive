@@ -9,7 +9,7 @@ import { SlPeople } from "react-icons/sl";
 function Nav() {
   return (
     <div id="Nav">
-      <div className="logo">itslogo</div>
+      <div className="logo">Codive</div>
       <div className="settings">
         <div className="restPeople">
           <div className="restPeople_icon settingsIcon"><SlPeople size="20" /></div>
