@@ -1,6 +1,6 @@
 .number { 
   margin-left: 6vw;
-  margin-top: 1.5vh;
+  margin-top: 10vh;
   font-family: "Pretendard-Bold";
 }
 .problem {
@@ -20,6 +20,7 @@
   background-color: #3100AE;
   color: white;
   white-space: nowrap;
+  font-size: medium;
 }
 
 .ai-box {
@@ -30,7 +31,7 @@
   width: 85%;
   overflow: hidden;
   font-family: "Pretendard-Regular";
-  margin-left: 6vw;
+  margin-left: 1vw;
 }
 .aiBoxTitle {
   font-family: "Pretendard-Bold";
@@ -58,6 +59,7 @@
 }
 .errorButton {
   margin-left: 6vw;
+  margin-right: 2vw;
 }
 .errorButton .icon, .aiButton .icon {
   margin-right: 0.5vw;
@@ -118,4 +120,9 @@
   resize: none;
   font-family: "Pretendard-Regular";
   outline: none;
+}
+.room-container {
+  background-color: white; /* 흰색 배경 적용 */
+  width: 100vw;  /* 화면 전체 너비 */
+  height: 100vh; /* 화면 전체 높이 */
 }
