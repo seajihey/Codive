@@ -98,6 +98,8 @@ body {
   align-items: center;
   height: 100vh;
   background-color: #fff;
+  overflow: hidden; /* 스크롤 방지 */
+  position: relative; /* ::before, ::after가 위치 설정을 할 수 있도록 position 추가 */
 }
 
 .home-container {

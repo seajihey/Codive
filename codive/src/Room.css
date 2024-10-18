@@ -25,11 +25,13 @@
   border: 1px solid #ccc;
   padding: 1.5vh;
   margin-top: 1.5vh;
-  height: 15vh;
+  height: fit-content;
   width: 85%;
   overflow: hidden;
   font-family: "Pretendard-Regular";
   margin-left: 6vw;
+  background-color: white;
+  padding-top: 3vh;
 }
 .aiBoxTitle {
   font-family: "Pretendard-Bold";
@@ -68,7 +70,7 @@
   display: flex;
   justify-content: flex-end;
   margin-right: 3.5vw;
-  margin-top: 3vh;
+  margin-top: 5vh;
   margin-left: 45vw;
 }
 
@@ -82,7 +84,7 @@
   align-items: center;
   font-family: "Pretendard-Regular";
   white-space: nowrap;
-  margin-top: 5vh;
+  padding-top: 5vh;
 }
 
 .exitButton .icon {
@@ -111,7 +113,7 @@
 
 .codeInput {
   width: 100%;
-  height: 55vh;
+  height: 50vh;
   padding: 1.5vh;
   font-size: 2vh;
   border: 1px solid gray;
@@ -120,8 +122,10 @@
   font-family: "Pretendard-Regular";
   outline: none;
 }
-/* .room-container {
+
+.room-container {
   background-color: white; 
   width: 100%; 
-  height: 100vh;
-} */
+  height: 100%; 
+  overflow-y: scroll;
+}
