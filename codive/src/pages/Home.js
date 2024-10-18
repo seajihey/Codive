@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../Home.css';
 
+
 function Home() {
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState('join'); // Default popup type is "join"

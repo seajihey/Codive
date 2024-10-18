@@ -39,49 +39,50 @@
     border-radius: 50%;
     width: 50vw;
     height: 50vw;
-    margin-left: -200px;
-    filter:blur(90px);  
-    top: calc(50vh - 50vw/2);
-    left: calc(50vw );
+    margin-left: -10.4167vw; /* 200px -> 10.4167vw */
+    filter: blur(4.6875vw); /* 90px -> 4.6875vw */
+    top: calc(50vh - 50vw / 2);
+    left: calc(50vw);
     animation: animateBefore 7s cubic-bezier(0.47, 0, 0.745, 0.715) infinite;
-  }
-  
-  body::after {
-    background: var(--secondary-glow);
-    border-radius: 50%;
-    width: 500px;
-    height: 700px;
-    filter:blur(90px);
-    top: calc(50vh - 50vw/2);
-    left: calc(50vw - 50vw/2);
-    animation: animateAfter 7s cubic-bezier(0.47, 0, 0.745, 0.715) infinite;
-  }
+}
 
-  @keyframes animateBefore {
-    0% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(200px) scale(0.8);
   
-    }
-    100% {
-      transform: translateY(0);
-    }
+body::after {
+  background: var(--secondary-glow);
+  border-radius: 50%;
+  width: 26.0417vw; /* 500px -> 26.0417vw */
+  height: 36.4583vh; /* 700px -> 36.4583vh */
+  filter: blur(4.6875vw); /* 90px -> 4.6875vw */
+  top: calc(50vh - 50vw / 2);
+  left: calc(50vw - 50vw / 2);
+  animation: animateAfter 7s cubic-bezier(0.47, 0, 0.745, 0.715) infinite;
+}
+
+
+@keyframes animateBefore {
+  0% {
+    transform: translateY(0);
   }
-  
-  @keyframes animateAfter{
-    0% {
-      transform: translateX(0);
-    }
-    50% {
-      transform: translateX(-250px) scale(1.2);
-  
-    }
-    100% {
-      transform: translateX(0);
-    }
+  50% {
+    transform: translateY(10.4167vh) scale(0.8); /* 200px -> 10.4167vh */
   }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes animateAfter {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-13.0208vw) scale(1.2); /* 250px -> 13.0208vw */
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 
 
 * {
@@ -102,8 +103,8 @@ body {
 .home-container {
   text-align: center;
   width: 100%;
-  max-width: 1200px; /* 최대 너비 */
-  padding: 0 1.0417vw; /* 좌우 패딩 */
+  max-width: 100vw; /* 1200px -> 100vw (뷰포트 너비의 100%) */
+  padding: 0 1.0417vw; /* 좌우 패딩은 이미 vw로 설정됨 */
 }
 
 /* 로고 */
@@ -142,11 +143,11 @@ body {
 .button {
   background-color: #fff;
   border: none;
-  padding: 1.8958vh 3.7240vw; /* 버튼 내부 패딩 */
+  padding: 3.2292vh 3.7240vw; /* 1.8958vh는 그대로, 3.7240vw는 그대로 */
   font-size: 1.1510vw; /* 버튼 텍스트 폰트 크기 */
   font-weight: normal;
-  border-radius: 30px; /* 둥근 모서리 */
-  box-shadow: 0 0.5417vh 1.625vh rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  border-radius: 1.5625vw; /* 30px -> 1.5625vw (고정 너비 기준으로 변환) */
+  box-shadow: 0 0.5417vh 4.6875vh rgba(0, 0, 0, 0.1); /* 1.625vh -> 4.6875vh (고정 너비 기준으로 변환) */
   cursor: pointer; /* 커서 스타일 */
   transition: all 0.3s ease; /* 호버 효과를 위한 부드러운 전환 */
 }
@@ -171,16 +172,17 @@ body {
 
 .popup-inner {
   background: #fff;
-  padding: 4.8148vh; /* 내부 패딩 */
-  border-radius: 15px; /* 둥근 모서리 */
-  width: 27.0833vw; /* 고정 너비 */
-  height: 70vh; /* 고정 높이 */
-  box-shadow: 0 0.5417vh 2.4375vh rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  padding: 4.8148vh; /* 내부 패딩은 vh로 그대로 유지 */
+  border-radius: 0.625vw; /* 15px -> 0.625vw (고정 너비 기준으로 변환) */
+  width: 27.0833vw; /* 고정 너비는 그대로 유지 */
+  height: 70vh; /* 고정 높이는 그대로 유지 */
+  box-shadow: 0 0.5417vh 4.6875vh rgba(0, 0, 0, 0.1); /* 2.4375vh -> 4.6875vh로 변환 */
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
 }
+
 
 .close-btn {
   position: absolute;

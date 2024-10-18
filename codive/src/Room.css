@@ -1,6 +1,5 @@
 .number { 
   margin-left: 6vw;
-  margin-top: 10vh;
   font-family: "Pretendard-Bold";
 }
 .problem {
@@ -16,7 +15,6 @@
   border-radius: 1.5vh;
   border: 1px solid rgb(180, 180, 180);
   font-family: "Pretendard-Regular";
-  margin-top: -5vh;
   background-color: #3100AE;
   color: white;
   white-space: nowrap;
@@ -27,11 +25,11 @@
   border: 1px solid #ccc;
   padding: 1.5vh;
   margin-top: 1.5vh;
-  height: 25vh;
+  height: 15vh;
   width: 85%;
   overflow: hidden;
   font-family: "Pretendard-Regular";
-  margin-left: 1vw;
+  margin-left: 6vw;
 }
 .aiBoxTitle {
   font-family: "Pretendard-Bold";
@@ -84,6 +82,7 @@
   align-items: center;
   font-family: "Pretendard-Regular";
   white-space: nowrap;
+  margin-top: 5vh;
 }
 
 .exitButton .icon {
@@ -121,8 +120,8 @@
   font-family: "Pretendard-Regular";
   outline: none;
 }
-.room-container {
-  background-color: white; /* 흰색 배경 적용 */
-  width: 100vw;  /* 화면 전체 너비 */
-  height: 100vh; /* 화면 전체 높이 */
-}
+/* .room-container {
+  background-color: white; 
+  width: 100%; 
+  height: 100vh;
+} */
