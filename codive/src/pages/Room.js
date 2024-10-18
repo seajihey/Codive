@@ -7,7 +7,7 @@ import { FaDoorOpen, FaRobot, FaCircle, FaRegCircle } from 'react-icons/fa';  //
 function Room() {
   const [code, setCode] = useState('');  // 파이썬 코드 입력 상태
   const [lineCount, setLineCount] = useState(1);  // 줄 번호 상태
-  const [showAIBox, setShowAIBox] = useState(false);  // AI 추천 박스 상태
+  const [showAIBox, setShowAIBox] = useState(true);  // AI 추천 박스 상태
   const [errorToggled, setErrorToggled] = useState(false);  // 오류 위치 토글 상태
   const [currentProblem, setCurrentProblem] = useState(1);  // 현재 문제 번호 (1~5)
   const navigate = useNavigate();  // useNavigate 훅 사용
@@ -53,7 +53,7 @@ function Room() {
   };
 
   return (
-    <>
+    <div className="room-container">
       <div className="exitButtonContainer">
         <button className="exitButton" onClick={exitRoom}>
           <FaDoorOpen className="icon" /> 방 나가기
@@ -101,13 +101,13 @@ function Room() {
           <div className="ai-box">
             <p>AI가 추천하는 코드가 여기에 나타납니다.</p>
             <div className="scrollable-content">
-              <p>AI 추천 코드</p>
+              <p> </p>
             </div>
           </div>
         </div>
       )}
 
-    </>
+    </div>
   );
 }
 

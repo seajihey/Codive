@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../Home.css';
 
+
 function Home() {
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState('join'); // Default popup type is "join"
@@ -100,7 +101,7 @@ function Home() {
                   <div className="input-container">
                     <label>그룹 초대코드</label>
                     <input type="text" value={inviteCode} onChange={(e) => setInviteCode(e.target.value)} />
-                    <p className="error-message">중복된 코드입니다.</p>
+                    {/* <p className="error-message">중복된 코드입니다.</p> */}
                   </div>
                   <div className="input-container">
                     <label>그룹 비밀번호</label>

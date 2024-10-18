@@ -51,6 +51,8 @@
     box-sizing: border-box;
     font-family: "Pretendard-Bold";
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+    top: 0; /* 화면 상단에 고정 */
+    left: 0; /* 좌측에서 시작 */
 }
 .logo{
 

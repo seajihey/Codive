@@ -17,7 +17,7 @@ function Report() {
             <div className="TextSemi">
               아래에 당신이 푼 코드의 분석이 있습니다.<br />
               시간복잡도, 코드 스타일, 테스트케이스 통과여부, 메모리 사용량 등의 분석을 한 눈에 확인하세요.<br />
-              말을 조금 더 넣으면 밋밋함이 좀 덜 할 것 같은디 딱히 쓸 말이 없음!!!
+              
             </div>
             <div class="crown"><FaCrown size="150px" color="#F6D903" /></div>
           </div>
