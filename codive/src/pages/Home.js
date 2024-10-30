@@ -65,7 +65,7 @@ function Home() {
       
       {/* 로고 */}
       <header className="header">
-        <div className="logo">코디브<br />logo</div>
+        <div className="logo">Codive</div>
       </header>
 
       <main className="main-content">
