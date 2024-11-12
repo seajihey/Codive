@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 
 // page 요소
@@ -13,6 +13,14 @@ import "./App.css";
 
 function App() {
   const location = useLocation();
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/')
+      .then(response => response.json())
+      .then(data => setData(data));
+  }, []);
+
 
   return (
     <div className="App">
