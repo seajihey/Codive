@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 import models
 import schemas
@@ -28,6 +29,17 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+# static 루트 url에 연결
+build_path = os.path.join(os.getcwd(), "build")
+
+app.mount("/static", StaticFiles(directory=os.path.join(build_path, "static")), name="static")
+
+@app.get("/")
+async def serve_react_app():
+    return FileResponse(os.path.join(build_path, "index.html"))
+
 
 ################# 질문 관련 api ####################
 @app.post("/api/questions")
