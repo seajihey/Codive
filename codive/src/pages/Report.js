@@ -8,12 +8,27 @@ import { BsFillSave2Fill } from "react-icons/bs";
 
 function Report() {
 
+
+  const [guestCount, setGuestCount] = useState(0);
+  const roomCode = "abd"; 
+
+  useEffect(() => {
+    fetch(`http://127.0.0.1:8000/api/room/${roomCode}/guests`)
+      .then(response => response.json())
+      .then(lengthData => {
+        setGuestCount(lengthData.length); 
+      })
+      .catch(error => {
+        console.error('게스트를 가져오는 중 오류 발생:', error);
+      });
+  }, [roomCode]);
+
   return (
     <div className="report">
         <div className="backText">
           <div class="backtext1">
             <div className="TextBallon">내 순위는?</div>
-            <div className="TextBold">05명 중 1등 !</div>
+            <div className="TextBold">{guestCount}명 중 1등 !</div>
             <div className="TextSemi">
               아래에 당신이 푼 코드의 분석이 있습니다.<br />
               시간복잡도, 코드 스타일, 테스트케이스 통과여부, 메모리 사용량 등의 분석을 한 눈에 확인하세요.<br />
