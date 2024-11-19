@@ -1,26 +1,33 @@
 // src/pages/Room.js
-import React, { useState, useEffect } from 'react';
+import React, { useState} from 'react';
 import '../Room.css';  // CSS 파일 import
 import { useNavigate } from 'react-router-dom';  // useNavigate import
-import { FaDoorOpen, FaRobot, FaCircle, FaRegCircle } from 'react-icons/fa';  // 아이콘 import
+import { FaRobot, FaCircle, FaRegCircle } from 'react-icons/fa';  // 아이콘 import
+import { Editor } from '@monaco-editor/react';
 
 function Room() {
-  const [code, setCode] = useState('');  // 파이썬 코드 입력 상태
-  const [lineCount, setLineCount] = useState(1);  // 줄 번호 상태
+  const [setCode] = useState('');  // 파이썬 코드 입력 상태
   const [showAIBox, setShowAIBox] = useState(true);  // AI 추천 박스 상태
   const [errorToggled, setErrorToggled] = useState(false);  // 오류 위치 토글 상태
   const [currentProblem, setCurrentProblem] = useState(1);  // 현재 문제 번호 (1~5)
   const navigate = useNavigate();  // useNavigate 훅 사용
 
-  // 줄 번호 업데이트 함수
-  useEffect(() => {
-    setLineCount(code.split('\n').length);
-  }, [code]);
-  // 줄 번호 생성 함수
-  const generateLineNumbers = () => {
-    return Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
-  };
-
+  //모나코 함수들
+  function handleEditorChange(value, event) {
+    // here is the current value
+  }
+  function handleEditorDidMount(editor, monaco) {
+    console.log('onMount: the editor instance:', editor);
+    console.log('onMount: the monaco instance:', monaco);
+  }
+  function handleEditorWillMount(monaco) {
+    console.log('beforeMount: the monaco instance:', monaco);
+  }
+  function handleEditorValidation(markers) {
+    // model markers
+    // markers.forEach(marker => console.log('onValidate:', marker.message));
+  }
+  
   // 문제 목록 (간단한 예시)
   const problems = [
     "두 정수 A와 B를 입력받은 다음, A+B를 출력하는 프로그램을 작성하시오.",
@@ -48,35 +55,24 @@ function Room() {
     }
   };
 
-  const exitRoom = () => {
-    navigate('/home');  // Home.js로 이동
-  };
-
   return (
     <div className="room-container">
-      <div className="exitButtonContainer">
-        <button className="exitButton" onClick={exitRoom}>
-          <FaDoorOpen className="icon" /> 방 나가기
-        </button>
-      </div>
-      
+
       {/* 번호 및 문제 */}
       <h2 className="number"># 0{currentProblem}번 |</h2> 
       <p className="problem">{problems[currentProblem - 1]}</p>
       
-    <div className="codeContainer">
-      <div className="lineNumbers">
-        <pre>{generateLineNumbers()}</pre>
+      <div className="codeContainer">
+        <Editor className='codeEditor'
+          height="50vh"
+          defaultLanguage="python"
+          defaultValue="// 코드를 입력하세요"
+          onChange={handleEditorChange}
+          onMount={handleEditorDidMount}
+          beforeMount={handleEditorWillMount}
+          onValidate={handleEditorValidation}
+        />
       </div>
-
-      <textarea
-        className="codeInput"
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        placeholder="파이썬 코드를 입력하세요."
-        rows="20"
-      />
-    </div>
       
       {/* 오류 위치 표시 버튼*/}
       <button className="errorButton" onClick={toggleError}>
