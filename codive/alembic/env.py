@@ -8,8 +8,7 @@ from alembic import context
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-from codive.models import Base
-target_metadata = Base.metadata
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
@@ -77,3 +76,6 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+from codive.models import Base  # 모델이 정의된 모듈을 가져옴
+
+target_metadata = Base.metadata

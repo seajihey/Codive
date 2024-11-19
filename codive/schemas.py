@@ -21,3 +21,19 @@ class UserCreate(BaseModel):
 
     class Config:
         from_attributes = True
+        
+        
+
+class AnswerBase(BaseModel):
+    content: str
+    question_id: int
+    user_id: str
+
+class AnswerCreate(AnswerBase):
+    pass
+
+class Answer(AnswerBase):
+    id: int
+
+    class Config:
+        orm_mode = True

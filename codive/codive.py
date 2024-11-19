@@ -52,6 +52,16 @@ def read_question(question_id: int, db: Session = Depends(get_db)):
 def read_all_question(db: Session = Depends(get_db)):
     questions = db.query(models.Question).all()
     return questions
+@app.delete("/api/questions/{question_id}", response_model=schemas.QuestionCreate)
+def delete_question(question_id: int, db: Session = Depends(get_db)):
+    question = db.query(models.Question).filter(models.Question.id == question_id).first()
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+    
+    db.delete(question)
+    db.commit()
+    return {"detail": "Question deleted successfully"}
+
 
 ################ 입장시 게스트 생성 #####################
 
@@ -99,3 +109,70 @@ def create_room(room: schemas.RoomCreate, db: Session = Depends(get_db)):
 def read_all_room(db: Session = Depends(get_db)):
     db_rooms = db.query(models.Room).all()
     return db_rooms
+
+################## 질문 답 api######################
+@app.post("/api/answers", response_model=schemas.AnswerCreate)
+def create_answer(answer: schemas.AnswerCreate, db: Session = Depends(get_db)):
+    db_answer = models.Answer(
+        content=answer.content,
+        question_id=answer.question_id,
+        user_id=answer.user_id
+    )
+    db.add(db_answer)
+    db.commit()
+    db.refresh(db_answer)
+    return db_answer
+@app.delete("/api/answers/{answer_id}", response_model=schemas.AnswerCreate)
+def delete_answer(answer_id: int, db: Session = Depends(get_db)):
+    answer = db.query(models.Answer).filter(models.Answer.id == answer_id).first()
+    if answer is None:
+        raise HTTPException(status_code=404, detail="Answer not found")
+    
+    db.delete(answer)
+    db.commit()
+    return {"detail": "Answer deleted successfully"}
+@app.get("/api/answers/", response_model=List[schemas.AnswerCreate])
+def read_all_answers(db: Session = Depends(get_db)):
+    answers = db.query(models.Answer).all()
+    return answers
+@app.get("/api/questions/{question_id}/answers", response_model=List[schemas.AnswerCreate])
+def read_answers_for_question(question_id: int, db: Session = Depends(get_db)):
+    answers = db.query(models.Answer).filter(models.Answer.question_id == question_id).all()
+    return answers
+
+
+############ report관련 도구 ############
+import tempfile
+import subprocess
+
+@app.post("/api/analyze-code/")
+async def analyze_code(code: str):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
+        temp_file.write(code.encode('utf-8'))
+        temp_file.flush()
+
+        try:
+            # Pylint 실행
+            result = subprocess.run(
+                ['pylint', temp_file.name],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            
+            # 전체 결과를 줄 단위로 분리
+            lines = result.stdout.split('\n')
+            # 오류 메시지를 추출하여 경로를 제외하고 저장
+            filtered_lines = []
+            for line in lines:
+                if 'E0001' in line or 'syntax-error' in line:
+                    # 경로와 메시지를 구분하는 첫 번째 콜론 뒤에서부터 메시지를 추출
+                    _, message = line.split(': ', 1)
+                    filtered_lines.append(message)
+            
+            # 필터링된 메시지를 하나의 문자열로 결합
+            error_message = '\n'.join(filtered_lines)
+
+            return {"result": error_message}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))

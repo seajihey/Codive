@@ -18,7 +18,7 @@ class Answer(Base):
     question_id = Column(Integer, ForeignKey("question.id"))
     question = relationship("Question", backref="answers")
 
-    user_id = Column(Integer, ForeignKey("user.id"))
+    user_id = Column(String, ForeignKey("user.id"))
     user = relationship("User", back_populates="answers")
 
 
