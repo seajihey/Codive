@@ -13,13 +13,22 @@ import "./App.css";
 
 function App() {
   const location = useLocation();
-  const [data, setData] = useState(null);
-
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/')
-      .then(response => response.json())
-      .then(data => setData(data));
+    const socket = new WebSocket('ws://127.0.0.1:8000/ws');
+    
+    socket.onopen = () => {
+      console.log('WebSocket connection established');
+    };
+
+    socket.onmessage = (event) => {
+      console.log('Message from server ', event.data);
+    };
+
+    return () => {
+      socket.close();
+    };
   }, []);
+  
 
 
   return (

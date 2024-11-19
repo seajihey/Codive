@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends,WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -16,7 +16,7 @@ models.Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 모든 도메인 허용
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # 모든 도메인 허용
     allow_credentials=True,
     allow_methods=["*"],  # 모든 메서드 허용
     allow_headers=["*"],
@@ -30,15 +30,6 @@ def get_db():
     finally:
         db.close()
 
-
-# static 루트 url에 연결
-build_path = os.path.join(os.getcwd(), "build")
-
-app.mount("/static", StaticFiles(directory=os.path.join(build_path, "static")), name="static")
-
-@app.get("/")
-async def serve_react_app():
-    return FileResponse(os.path.join(build_path, "index.html"))
 
 
 ################# 질문 관련 api ####################
