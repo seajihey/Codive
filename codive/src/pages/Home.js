@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../Home.css';
 
 
-function Home() {
+function Home( {allowAICodeRecommendation, setAllowAICodeRecommendation}) {
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState('join'); // Default popup type is "join"
   
@@ -13,7 +13,6 @@ function Home() {
 
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [allowErrorLocation, setAllowErrorLocation] = useState(false); // Option for "오류위치 제공 허용"
-  const [allowAICodeRecommendation, setAllowAICodeRecommendation] = useState(false); // Option for "AI코드 추천 허용"
 
   const navigate = useNavigate();
 

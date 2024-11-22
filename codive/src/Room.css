@@ -12,7 +12,7 @@
 .nextButton {
   width: 8vw;
   height: 6vh;
-  margin-left: 60vw;
+  margin-left: 50vw;
   border-radius: 1.5vh;
   border: 1px solid rgb(180, 180, 180);
   font-family: "Pretendard-Regular";
@@ -75,6 +75,9 @@
   margin-left: 6vw;
   margin-top: 4vh;
   font-family: "Pretendard-Regular";
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
 }
 
 .lineNumbers {
