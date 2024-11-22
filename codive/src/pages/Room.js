@@ -3,7 +3,6 @@ import '../Room.css';
 import { useNavigate } from 'react-router-dom';
 import { FaRobot, FaRegCheckCircle } from 'react-icons/fa';
 import { Editor } from '@monaco-editor/react';
-
 function Room() {
   const [code, setCode] = useState('');  // 입력된 파이썬 코드 상태
   const [showAIBox, setShowAIBox] = useState(false);

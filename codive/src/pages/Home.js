@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../Home.css';
+import "../waiting.css";
 
 function Home() {
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState('join');
-  
+  const [showWaitingPopup, setShowWaitingPopup] = useState(false); 
+  const [nowPerson, setNowPerson] = useState(1); // Initialize with a default value
+
   const [inviteCode, setInviteCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -27,6 +30,8 @@ function Home() {
 
   const handleClosePopup = () => {
     setShowPopup(false);
+    setShowWaitingPopup(false);
+    window.location.reload(); // Refresh the page
   };
 
   const resetForm = () => {
@@ -37,7 +42,6 @@ function Home() {
     clearErrorMessages();
   };
 
-
   const clearErrorMessages = () => {
     setInviteCodeErrorMessage('');
     setPasswordErrorMessage('');
@@ -45,33 +49,32 @@ function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
+    // Check if passwords match when creating a room
     if (popupType === 'create' && password !== confirmPassword) {
-      setPasswordMatch(false);
+      setPasswordMatch(false); 
       return;
     }
-  
+
     const endpoint = popupType === 'create' ? '/api/room_create' : '/api/room/enter';
-    const body = JSON.stringify({ codeID: inviteCode, pw: password, user_id: '사용자_아이디' });  // 사용자 ID 추가
-    
+    const body = JSON.stringify({ codeID: inviteCode, pw: password, user_id: '사용자_아이디' });
+
     try {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: body,
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
-        console.log("Error Data:", errorData); // 디버깅을 위해 콘솔에 오류 데이터를 출력
         handleError(response.status, errorData);
       } else {
         const data = await response.json();
         if (popupType === 'create') {
-          console.log(data);
-          setPopupType('room-options');
+          setPopupType('room-options'); // Show room options
         } else {
-          navigate('/room');
+          setShowWaitingPopup(true); // Show waiting popup for joining
         }
       }
     } catch (error) {
@@ -79,9 +82,13 @@ function Home() {
       setInviteCodeErrorMessage("서버 오류가 발생했습니다.");
       setPasswordErrorMessage("서버 오류가 발생했습니다.");
     }
-  };     
-  
-  // Updated error handling for invite code duplication in create room
+  };
+
+  const handleStartRoom = () => {
+    setShowWaitingPopup(false);
+    navigate('/room');
+  };
+
   const handleError = (status, errorData) => {
     let message;
   
@@ -147,7 +154,7 @@ function Home() {
             <p><br />그룹의 설정을 마무리 하세요.</p>
             <OptionField label="오류위치 제공 허용" checked={allowErrorLocation} setChecked={setAllowErrorLocation} />
             <OptionField label="AI코드 추천 허용" checked={allowAICodeRecommendation} setChecked={setAllowAICodeRecommendation} />
-            <button className="popup-create-button" onClick={() => { navigate('/room'); handleClosePopup(); }} style={{ backgroundColor: '#3100AE' }}>생성</button>
+            <button className="popup-create-button" onClick={() => setShowWaitingPopup(true)} style={{ backgroundColor: '#3100AE' }}>생성</button>
           </>
         );
       default:
@@ -181,6 +188,14 @@ function Home() {
           </div>
         </div>
       )}
+
+      {showWaitingPopup && (
+        <WaitingPopup
+          nowPerson={nowPerson}
+          onClose={handleClosePopup}
+          onStartRoom={popupType === 'room-options' ? handleStartRoom : undefined}
+        />
+      )}
     </div>
   );
 }
@@ -195,7 +210,6 @@ const InputField = ({ label, type = 'text', value, setValue, errorMessage = '', 
 
 const SubmitButton = ({ isFilled }) => (
   <button className="popup-button" style={{ backgroundColor: isFilled ? '#3100AE' : '#B5B5B5' }} disabled={!isFilled}>다음</button>
-  
 );
 
 const OptionField = ({ label, checked, setChecked }) => (
@@ -205,10 +219,22 @@ const OptionField = ({ label, checked, setChecked }) => (
       className="custom-checkbox" 
       checked={checked} 
       onChange={() => setChecked(!checked)} 
-      id={label} // 유일한 ID를 부여합니다
+      id={label}
     />
     <label htmlFor={label} className="custom-checkbox-label"></label> 
     <label htmlFor={label}>{label}</label> 
+  </div>
+);
+
+const WaitingPopup = ({ nowPerson, onClose, onStartRoom }) => (
+  <div className="waiting-popup">
+    <div className="waiting-popup-inner">
+      <p>사람을 모으는 중입니다. 방장은 시작하기를 눌러 시작할 수 있습니다.  <br/><br/>현재 인원: {nowPerson}명</p>
+      {onStartRoom ? (
+        <button className="start-btn" onClick={onStartRoom}>시작하기</button>
+      ) : null}
+      <button className="close-btn" onClick={onClose}>닫기</button>
+    </div>
   </div>
 );
 
