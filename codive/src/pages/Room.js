@@ -1,35 +1,17 @@
-
-// src/pages/Room.js
-import React, { useState} from 'react';
-import '../Room.css';  // CSS 파일 import
-import { useNavigate } from 'react-router-dom';  // useNavigate import
-import { FaRobot, FaCircle, FaRegCircle } from 'react-icons/fa';  // 아이콘 import
+import React, { useState } from 'react';
+import '../Room.css';
+import { useNavigate } from 'react-router-dom';
+import { FaRobot, FaRegCheckCircle } from 'react-icons/fa';
 import { Editor } from '@monaco-editor/react';
 
-function Room() {
-  const [setCode] = useState('');  // 파이썬 코드 입력 상태
-  const [showAIBox, setShowAIBox] = useState(true);  // AI 추천 박스 상태
-  const [errorToggled, setErrorToggled] = useState(false);  // 오류 위치 토글 상태
-  const [currentProblem, setCurrentProblem] = useState(1);  // 현재 문제 번호 (1~5)
-  const navigate = useNavigate();  // useNavigate 훅 사용
+function Room({ allowAICodeRecommendation }) {
+  const [code, setCode] = useState('');  // 입력된 파이썬 코드 상태
+  const [showAIBox, setShowAIBox] = useState(false);
+  const [currentProblem, setCurrentProblem] = useState(1);
+  const navigate = useNavigate();
+  const [aiResponse, setAIResponse] = useState(""); // AI 응답 저장
 
-  //모나코 함수들
-  function handleEditorChange(value, event) {
-    // here is the current value
-  }
-  function handleEditorDidMount(editor, monaco) {
-    console.log('onMount: the editor instance:', editor);
-    console.log('onMount: the monaco instance:', monaco);
-  }
-  function handleEditorWillMount(monaco) {
-    console.log('beforeMount: the monaco instance:', monaco);
-  }
-  function handleEditorValidation(markers) {
-    // model markers
-    // markers.forEach(marker => console.log('onValidate:', marker.message));
-  }
-
-
+  // 문제 목록
   const problems = [
     "두 정수 A와 B를 입력받은 다음, A+B를 출력하는 프로그램을 작성하시오.",
     "세 정수 A, B, C를 입력받고, 그 중 가장 큰 값을 출력하는 프로그램을 작성하시오.",
@@ -83,7 +65,6 @@ function Room() {
     }
   };
 
-
   // Editor 값 변경 핸들러
   const handleEditorChange = (value) => {
     setCode(value);
@@ -101,39 +82,42 @@ function Room() {
   };
 
   const handleAIButtonClick = async () => {
-    setShowAIBox((prevState) => !prevState); // true <-> false 토글
+    if (!allowAICodeRecommendation) return;
 
-    if (!showAIBox) { // AI 창이 닫혀있으면 데이터 요청
-        const formattedCode = formatCode(code); // 코드 형식 정리
-        const payload = {
-            user_code: formattedCode,
-            max_tokens: 300,  // 서버에 정의된 기본 max_tokens를 설정
-        };
-
-        try {
-          const response = await fetch("http://localhost:8000/generate-hint/", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-          });
+    setShowAIBox((prevState) => !prevState); // Toggle showAIBox
   
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
+    if (!showAIBox) { // If AI box is closed, request data
+      const formattedCode = formatCode(code); // Format the code
+      const currentProblemStatement = problems[currentProblem - 1]; // Get the current problem statement
   
-          const data = await response.json();
-          setAIResponse(data || "AI로부터 응답을 받을 수 없습니다. 다시 시도해주세요.");
-        } catch (error) {
-          console.error("AI 요청 중 오류 발생:", error);
-          setAIResponse("AI로부터 응답을 받을 수 없습니다. 다시 시도해주세요.");
+      const payload = {
+        user_code: formattedCode,
+        problem_statement: currentProblemStatement, // Include the problem statement
+        max_tokens: 100,  // Set the max_tokens as defined by server
+      };
+  
+      try {
+        const response = await fetch("http://localhost:8000/generate-hint/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+  
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
         }
-      }
-    };
   
-
-
+        const data = await response.json();
+        console.log(data);
+        setAIResponse(data.content || "AI로부터 응답을 받을 수 없습니다. 다시 시도해");
+      } catch (error) {
+        console.error("AI 요청 중 오류 발생:", error);
+        setAIResponse("AI로부터 응답을 받을 수 없습니다. 다시 시도해주세요.");
+      }
+    }
+  };
 
   return (
     <div className="room-container">
@@ -164,8 +148,7 @@ function Room() {
         오류 위치 표시되는 중
       </label>
 
-
-      <button className="aiButton" onClick={handleAIButtonClick}>
+      <button className="aiButton" onClick={handleAIButtonClick} disabled={!allowAICodeRecommendation}>
         <FaRobot className="icon" /> {showAIBox == true ? 'AI가 멘트를 추천하는 중':'AI가 추천하는 멘트 보기'}
       </button>
 
