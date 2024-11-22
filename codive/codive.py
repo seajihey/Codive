@@ -18,9 +18,9 @@ models.Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # 모든 도메인 허용
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
-    allow_methods=["*"],  # 모든 메서드 허용
+    allow_methods=["*"],  
     allow_headers=["*"],
 )
 
@@ -224,11 +224,11 @@ f"{request.problem}이문제에대한 답으로 다음과 같은 코드를 작�
     
     
 from pydantic import BaseModel
-
 # 요청 데이터 모델 정의
 class GPTRequest(BaseModel):
     user_code: str  # 사용자가 작성한 코드
-    max_tokens: int = 300  # 생성 텍스트 제한
+    max_tokens: int = 100  # 생성 텍스트 제한
+    problem_statement: str  # 문제 설명
 
 # OpenAI GPT 호출 엔드포인트
 @app.post("/generate-hint/")
@@ -237,13 +237,14 @@ async def generate_hint(request: GPTRequest):
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": (
-                    f"다음 코드를 작성했어:\n\n{request.user_code}\n\n"
-                    "이 코드를 보고 추가로 더하면 좋을 내용이나, 어떻게 진행되면 좋을지 "
-                    "힌트를 짧고 간결하게 한글로 설명해줘. 핵심만 간단히 말해줘."
-                )}
-            ],
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": (
+                f"문제 설명: {request.problem_statement}\n\n"
+                f"다음 코드를 작성했어:\n\n{request.user_code}\n\n"
+                "이 코드와 문제 설명을 참고하여, 추가로 더하면 좋을 내용이나 어떻게 "
+                "진행되면 좋을지 힌트를 짧고 간결하게 한글로 설명해줘. 핵심만 간단히 100자 이내로 말해줘. 그리고 직접적인 코드 설명은 하지마."
+            )}
+        ],
             max_tokens=request.max_tokens
         )
         return response.choices[0].message
