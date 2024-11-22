@@ -2,24 +2,26 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../Home.css';
 
-
 function Home() {
   const [showPopup, setShowPopup] = useState(false);
-  const [popupType, setPopupType] = useState('join'); // Default popup type is "join"
+  const [popupType, setPopupType] = useState('join');
   
   const [inviteCode, setInviteCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const [passwordMatch, setPasswordMatch] = useState(true);
-  const [allowErrorLocation, setAllowErrorLocation] = useState(false); // Option for "오류위치 제공 허용"
-  const [allowAICodeRecommendation, setAllowAICodeRecommendation] = useState(false); // Option for "AI코드 추천 허용"
-
+  const [allowErrorLocation, setAllowErrorLocation] = useState(false); 
+  const [allowAICodeRecommendation, setAllowAICodeRecommendation] = useState(false);
+  
+  const [inviteCodeErrorMessage, setInviteCodeErrorMessage] = useState('');
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
+  
   const navigate = useNavigate();
 
   const handleOpenPopup = (type) => {
     setShowPopup(true);
-    setPopupType(type); // Set popup type based on button clicked
+    setPopupType(type);
     resetForm();
   };
 
@@ -32,38 +34,129 @@ function Home() {
     setPassword('');
     setConfirmPassword('');
     setPasswordMatch(true);
+    clearErrorMessages();
   };
 
-  const handleSubmit = (e) => {
+
+  const clearErrorMessages = () => {
+    setInviteCodeErrorMessage('');
+    setPasswordErrorMessage('');
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+  
     if (popupType === 'create' && password !== confirmPassword) {
       setPasswordMatch(false);
       return;
     }
-
-    if (popupType === 'create') {
-      setPopupType('room-options');
-    } else {
-      navigate('/room');
-    }
-  };
-
-  const isInputFilled = () => {
-    return inviteCode.trim() !== '' && password.trim() !== '';
-  };
-
-  const getPasswordInputClass = () => {
-    if (!passwordMatch && popupType === 'create') {
-      return 'error';
-    }
-    return '';
-  };
-
-  return (   
-
-    <div className="home-container">
+  
+    const endpoint = popupType === 'create' ? '/api/room_create' : '/api/room/enter';
+    const body = JSON.stringify({ codeID: inviteCode, pw: password, user_id: '사용자_아이디' });  // 사용자 ID 추가
+    
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body,
+      });
       
-      {/* 로고 */}
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log("Error Data:", errorData); // 디버깅을 위해 콘솔에 오류 데이터를 출력
+        handleError(response.status, errorData);
+      } else {
+        const data = await response.json();
+        if (popupType === 'create') {
+          console.log(data);
+          setPopupType('room-options');
+        } else {
+          navigate('/room');
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setInviteCodeErrorMessage("서버 오류가 발생했습니다.");
+      setPasswordErrorMessage("서버 오류가 발생했습니다.");
+    }
+  };     
+  
+  // Updated error handling for invite code duplication in create room
+  const handleError = (status, errorData) => {
+    let message;
+  
+    switch (status) {
+      case 404:
+        message = errorData.detail || "올바르지 않은 초대 코드입니다.";
+        setInviteCodeErrorMessage(message);
+        setPasswordErrorMessage('');
+        break;
+      case 403:
+        message = errorData.detail || "비밀번호가 일치하지 않습니다.";
+        setPasswordErrorMessage(message);
+        setInviteCodeErrorMessage('');
+        break;
+      case 400:
+        message = errorData.detail || "중복된 코드입니다.";
+        setInviteCodeErrorMessage(message);
+        setPasswordErrorMessage('');
+        break;
+      default:
+        message = "알 수 없는 오류가 발생했습니다.";
+        setInviteCodeErrorMessage(message);
+        setPasswordErrorMessage(message);
+    }
+  };
+
+  const isInputFilled = () => inviteCode.trim() !== '' && password.trim() !== '';
+
+  const getPasswordInputClass = () => !passwordMatch && popupType === 'create' ? 'error' : '';
+
+  const renderPopupContent = () => {
+    switch (popupType) {
+      case 'create':
+        return (
+          <>
+            <h2>그룹 생성</h2>
+            <p>새로운 그룹을 생성해보세요. <br /> 중복된 코드는 생성 불가합니다.</p>
+            <form onSubmit={handleSubmit}>
+              <InputField label="그룹 초대코드" value={inviteCode} setValue={setInviteCode} errorMessage={inviteCodeErrorMessage} />
+              <InputField label="그룹 비밀번호" type="password" value={password} setValue={setPassword} />
+              <InputField label="그룹 비밀번호 재확인" type="password" value={confirmPassword} setValue={setConfirmPassword} errorMessage={!passwordMatch ? "비밀번호가 일치하지 않습니다." : ''} errorClass={getPasswordInputClass()} />
+              <SubmitButton isFilled={isInputFilled()} />
+            </form>
+          </>
+        );
+        
+      case 'join':
+        return (
+          <>
+            <h2>그룹 참가</h2>
+            <p><br />생성된 그룹에 참여하세요.</p>
+            <form onSubmit={handleSubmit}>
+              <InputField label="그룹 초대코드" value={inviteCode} setValue={setInviteCode} errorMessage={inviteCodeErrorMessage} />
+              <InputField label="그룹 비밀번호" type="password" value={password} setValue={setPassword} errorMessage={passwordErrorMessage} />
+              <SubmitButton isFilled={isInputFilled()} />
+            </form>
+          </>
+        );
+      case 'room-options':
+        return (
+          <>
+            <h2>그룹 생성</h2>
+            <p><br />그룹의 설정을 마무리 하세요.</p>
+            <OptionField label="오류위치 제공 허용" checked={allowErrorLocation} setChecked={setAllowErrorLocation} />
+            <OptionField label="AI코드 추천 허용" checked={allowAICodeRecommendation} setChecked={setAllowAICodeRecommendation} />
+            <button className="popup-create-button" onClick={() => { navigate('/room'); handleClosePopup(); }} style={{ backgroundColor: '#3100AE' }}>생성</button>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="home-container">
       <header className="header">
         <div className="logo">Codive</div>
       </header>
@@ -75,129 +168,48 @@ function Home() {
           AI가 제공하는 실시간 피드백과 문제를 푼 뒤 제공되는 평가보고서를 통해 약점을 보완하세요.
         </p>
         <div className="button-container">
-          <button
-            className="button"
-            onClick={() => handleOpenPopup('create')}
-          >
-            그룹 생성
-          </button>
-          <button
-            className="button"
-            onClick={() => handleOpenPopup('join')}
-          >
-            그룹 참가
-          </button>
+          <button className="button" onClick={() => handleOpenPopup('create')}>그룹 생성</button>
+          <button className="button" onClick={() => handleOpenPopup('join')}>그룹 참가</button>
         </div>
       </main>
 
       {showPopup && (
         <div className="popup">
           <div className="popup-inner">
-            {popupType === 'create' && (
-              <div>
-                <h2>그룹 생성</h2>
-                <p>새로운 그룹을 생성해보세요. <br /> 중복된 코드는 생성 불가합니다.</p>
-                <form onSubmit={handleSubmit}>
-                  <div className="input-container">
-                    <label>그룹 초대코드</label>
-                    <input type="text" value={inviteCode} onChange={(e) => setInviteCode(e.target.value)} />
-                    {/* <p className="error-message">중복된 코드입니다.</p> */}
-                  </div>
-                  <div className="input-container">
-                    <label>그룹 비밀번호</label>
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                  </div>
-                  <div className={`input-container ${getPasswordInputClass()}`}>
-                    <label>그룹 비밀번호 재확인</label>
-                    <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-                    {!passwordMatch && <p className="error-message">비밀번호가 일치하지 않습니다.</p>}
-                  </div>
-                  <button 
-                    className="popup-button" 
-                    onClick={handleSubmit} 
-                    style={{ backgroundColor: isInputFilled() ? '#3100AE' : '#B5B5B5' }}
-                    disabled={!isInputFilled()}
-                  >
-                    다음
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {popupType === 'join' && (
-              <div>
-                <h2>그룹 참가</h2>
-                <p><br />생성된 그룹에 참여하세요.</p>
-                <div className="input-container">
-                  <label><br /><br/>그룹 초대코드</label>
-                  <input type="text" value={inviteCode} onChange={(e) => setInviteCode(e.target.value)} />
-                </div>
-                <div className="input-container">
-                  <label>그룹 비밀번호</label>
-                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                </div>
-                <button 
-                  className="popup-button" 
-                  onClick={handleSubmit} 
-                  style={{ backgroundColor: isInputFilled() ? '#3100AE' : '#B5B5B5' }}
-                  disabled={!isInputFilled()}
-                >
-                  다음
-                </button>
-              </div>
-            )}
-
-            {popupType === 'room-options' && (
-              <div>
-                <h2>그룹 생성</h2>
-                <p><br />그룹의 설정을 마무리 하세요.</p>
-                                
-                <div className="option-container">
-                  <input
-                    type="checkbox"
-                    className="custom-checkbox"
-                    id="errorLocation"
-                    checked={allowErrorLocation}
-                    onChange={() => setAllowErrorLocation(!allowErrorLocation)}
-                  />
-                  <label htmlFor="errorLocation" className="custom-checkbox-label"></label>
-                  <label htmlFor="errorLocation">오류위치 제공 허용</label>
-                </div>
-
-                <div className="option-container">
-                  <input
-                    type="checkbox"
-                    className="custom-checkbox"
-                    id="aiCodeRecommendation"
-                    checked={allowAICodeRecommendation}
-                    onChange={() => setAllowAICodeRecommendation(!allowAICodeRecommendation)}
-                  />
-                  <label htmlFor="aiCodeRecommendation" className="custom-checkbox-label"></label>
-                  <label htmlFor="aiCodeRecommendation">AI코드 추천 허용</label>
-                </div>
-
-                {/* Always enabled "생성" button with active color */}
-                <button 
-                  className="popup-button" 
-                  onClick={() => { 
-                    // Navigate to room after selecting options
-                    navigate('/room'); 
-                    handleClosePopup();
-                  }}
-                  style={{ backgroundColor: '#3100AE' }}
-                >
-                  생성
-                </button>
-              </div>
-            )}
-
-            <button className="close-btn" onClick={handleClosePopup}>
-              ×</button>
+            {renderPopupContent()}
+            <button className="close-btn" onClick={handleClosePopup}>×</button>
           </div>
         </div>
       )}
     </div>
   );
 }
+
+const InputField = ({ label, type = 'text', value, setValue, errorMessage = '', errorClass = '' }) => (
+  <div className={`input-container ${errorClass}`}>
+    <label>{label}</label>
+    <input type={type} value={value} onChange={(e) => setValue(e.target.value)} />
+    {errorMessage && <p className="error-message">{errorMessage}</p>}
+  </div>
+);
+
+const SubmitButton = ({ isFilled }) => (
+  <button className="popup-button" style={{ backgroundColor: isFilled ? '#3100AE' : '#B5B5B5' }} disabled={!isFilled}>다음</button>
+  
+);
+
+const OptionField = ({ label, checked, setChecked }) => (
+  <div className="option-container">
+    <input 
+      type="checkbox" 
+      className="custom-checkbox" 
+      checked={checked} 
+      onChange={() => setChecked(!checked)} 
+      id={label} // 유일한 ID를 부여합니다
+    />
+    <label htmlFor={label} className="custom-checkbox-label"></label> 
+    <label htmlFor={label}>{label}</label> 
+  </div>
+);
 
 export default Home;

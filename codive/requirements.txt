@@ -13,3 +13,5 @@ psutil
 
 docker
 piston-cli -U
+concurrently --save-dev
+passlib
