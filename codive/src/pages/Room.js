@@ -62,6 +62,7 @@ function Room({ allowAICodeRecommendation }) {
       setCurrentProblem(currentProblem + 1);
       setCode('// 코드를 입력하세요');  
     } else {
+
       navigate('/report');
     }
   };

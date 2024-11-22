@@ -260,7 +260,6 @@ import requests
 
 
 
-
 # 요청 본문에 대한 Pydantic 모델 정의
 class GPTRequest(BaseModel):
     problem: str
