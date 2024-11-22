@@ -40,11 +40,11 @@
     min-height: 100vh;
     background-color: #F1F1F1;
     font-family: "Pretendard-Regular", sans-serif;
-    overflow-y: auto; 
+    overflow-y: auto;
 }
 
 .backText {
-    position: fixed; 
+    position: fixed;
     width: 100vw;
     display: flex;
     flex-direction: column;
@@ -55,6 +55,7 @@
     padding-top: 15vh;
     box-sizing: border-box;
 }
+
 .backtext1 {
     display: flex;
     flex-direction: column;
@@ -64,32 +65,31 @@
 
 .crown {
     position: absolute;
-    left:38rem;
-    top:10px
+    left: 38rem;
+    top: 10px;
 }
 
 .TextBallon {
     display: inline-block;
     position: relative;
     padding: 10px 30px;
-    background-color: #ffffff; 
+    background-color: #ffffff;
     border-radius: 2rem;
     font-family: "Pretendard-Bold";
     width: fit-content;
-    font-size:0.8rem;
+    font-size: 0.8rem;
     color: black;
     margin-bottom: 1vh;
-
 }
 
 .TextBallon::after {
     content: '';
     position: absolute;
     bottom: -1.1rem;
-    left: 0.8rem; 
+    left: 0.8rem;
     border-width: 10px;
     border-style: solid;
-    border-color: #ffffff transparent transparent transparent; 
+    border-color: #ffffff transparent transparent transparent;
 }
 
 .TextBold {
@@ -99,19 +99,20 @@
 }
 
 .TextSemi {
-    font-size:0.9rem; 
+    font-size: 0.9rem;
     font-family: "Pretendard-Regular";
 }
+
 .contentBox {
-    position: absolute;  
-    top: 40vh;          
+    position: absolute;
+    top: 40vh;
     width: 100%;
     background-color: #ffffff;
-    z-index: 2; 
-    box-shadow: 0px -0.125rem 0.3125rem rgba(0, 0, 0, 0.1); 
-    padding: 1rem; 
+    z-index: 2;
+    box-shadow: 0px -0.125rem 0.3125rem rgba(0, 0, 0, 0.1);
+    padding: 1rem;
     padding-bottom: 30vh !important;
-    height: auto;    
+    height: auto;
     box-sizing: border-box;
     transition: top 0.3s ease-in-out;
 }
@@ -119,22 +120,23 @@
 .contentBox.scrolled {
     top: 0; /* 스크롤 시 화면 상단으로 이동 */
 }
-.codeBox{
+
+.codeBox {
     width: 28vw !important;
 }
 
 .contentWrap {
-    width: 85vw;
+    width: 90vw;
     margin: 0 auto;
-    padding: 0 4.875vh; 
+    padding: 0 2.875vh;
     display: grid;
     grid-template-columns: auto 1fr;
 }
 
 .titles {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr 1fr;
-    margin-bottom: 1.25rem; 
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    margin-bottom: 1.25rem;
     grid-column: 2 / 3;
     justify-items: center;
 }
@@ -143,8 +145,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0px 0.0625rem 0.3625rem 0px rgba(0, 0, 0, 0.24); 
-    width: 11.41vw;
+    box-shadow: 0px 0.0625rem 0.3625rem 0px rgba(0, 0, 0, 0.24);
+    width: 9.41vw;
     height: 6.5vh;
     font-weight: bold;
     border-radius: 1rem;
@@ -164,12 +166,16 @@
 
 .line {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     grid-column: 2 / 3;
     height: 10vh;
 }
 
-.timeComplex, .codeStyle, .memoryUse, .playTime {
+.timeComplex,
+.codeStyle,
+.memoryUse,
+.testCase,
+.playTime {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -191,7 +197,8 @@
     margin-top: 5rem; /* Add some margin if necessary */
 }
 
-.mainBtn, .saveBtn {
+.mainBtn,
+.saveBtn {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -200,18 +207,18 @@
     height: 6.5vh;
     font-weight: bold;
     border-radius: 1rem;
-    margin: 0 1rem; 
+    margin: 0 1rem;
     background-color: #ffffff;
-    cursor: pointer; 
+    cursor: pointer;
 }
 
 .btnText {
     font-family: "Pretendard-Regular", sans-serif;
-    font-size: 1rem; 
+    font-size: 1rem;
     color: black;
 }
 
 .btnIcon {
-    margin-left: 0.5rem; 
+    margin-left: 0.5rem;
     color: black;
 }

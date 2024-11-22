@@ -1,56 +1,102 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import '../Report.css';
-
 import { FaCrown } from "react-icons/fa";
-import { LuCat } from "react-icons/lu";
 import { IoHome } from "react-icons/io5";
 import { BsFillSave2Fill } from "react-icons/bs";
 
-function Report() {
+const Report = React.memo(() => {
   const [userAnswers, setUserAnswers] = useState([]);
   const [guestCount, setGuestCount] = useState(0);
-  const roomCode = "abd"; 
+  const [codeAnalysisResults, setCodeAnalysisResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const roomCode = "abd";
+  const currentUser = "abd-1";
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/room/${roomCode}/guests`)
-      .then(response => response.json())
-      .then(lengthData => {
-        setGuestCount(lengthData.length); 
-      })
-      .catch(error => {
-        console.error('게스트를 가져오는 중 오류 발생:', error);
-      });
+    const fetchData = async () => {
+      try {
+        const [guestResponse, answersResponse] = await Promise.all([
+          fetch(`http://127.0.0.1:8000/api/room/${roomCode}/guests`),
+          fetch(`http://127.0.0.1:8000/api/answers/`)
+        ]);
 
-    fetch(`http://127.0.0.1:8000/api/answers/`)
-      .then(response => response.json())
-      .then(data => {
-        const promises = data
-          .filter(answer => answer.user_id === "abd-1")
-          .map(answer => {
-            return fetch(`http://127.0.0.1:8000/api/analyze-code/`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({ code: answer.content })
+        if (!guestResponse.ok || !answersResponse.ok) {
+          throw new Error('Failed to fetch data');
+        }
+
+        const guestData = await guestResponse.json();
+        setGuestCount(guestData.length);
+
+        const answersData = await answersResponse.json();
+        const filteredAnswers = answersData.filter(answer => answer.user_id === currentUser);
+        setUserAnswers(filteredAnswers);
+
+        const questionIds = filteredAnswers.map(answer => answer.question_id);
+
+        const questionResponse = await fetch(`http://127.0.0.1:8000/api/questions/all/`);
+        if (!questionResponse.ok) {
+          throw new Error('Failed to fetch questions');
+        }
+        const questionsData = await questionResponse.json();
+        const relevantQuestions = questionsData.filter(question => questionIds.includes(question.id));
+
+        const analysisResults = await Promise.all(relevantQuestions.map(async (question) => {
+          const answer = filteredAnswers.find(ans => ans.question_id === question.id);
+          const response = await fetch(`http://127.0.0.1:8000/generate-text/`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              problem: question.content,
+              answer: answer.content,
+              max_tokens: 150
             })
-              .then(response => response.json())
-              .then(result => {
-                const codeStyleArray = result.result ? result.result.split('\n') : [];
-                return {
-                  question_id: answer.question_id,
-                  content: answer.content,
-                  codeStyle: codeStyleArray
-                };
-              });
           });
 
-        Promise.all(promises).then(setUserAnswers);
-      })
-      .catch(error => {
-        console.error('답변을 가져오는 중 오류 발생:', error);
-      });
-  }, [roomCode]);
+          const gptResponse = await response.json();
+          try {
+            return JSON.parse(gptResponse.generated_text);
+          } catch (parseError) {
+            console.error('JSON parse error:', parseError);
+            throw new Error('Invalid JSON format');
+          }
+        }));
+
+        setCodeAnalysisResults(analysisResults);
+        setLoading(false); // 데이터 로딩 완료 후 로딩 상태 업데이트
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setLoading(false); // 오류 발생 시에도 로딩 상태 업데이트
+      }
+    };
+
+    fetchData();
+  }, [roomCode]); // roomCode가 변경될 때마다 데이터를 다시 가져옴
+
+  const renderedCodeAnalysis = useMemo(() => {
+    return codeAnalysisResults.map((result, index) => {
+      const testCasePass = result.test_pass || 'N/A';
+      const timeComplexity = result.time_complexity || 'N/A';
+      const codeStyle = result.code_style || 'N/A';
+      const executionTime = result.execution_time || 'N/A';
+      const memoryUsage = result.memory_usage || 'N/A';
+
+      return (
+        <div className="lineWrapper" key={index}>
+          <div className="num">#{index + 1}</div>
+          <div className="line">
+            <div className="timeComplex">{timeComplexity}</div>
+            <div className="codeStyle">{codeStyle}</div>
+            <div className="memoryUse">{memoryUsage}</div>
+            <div className="playTime">{executionTime}</div>
+            <div className="testCase">{testCasePass}</div>
+          </div>
+        </div>
+      );
+    });
+  }, [codeAnalysisResults]); // codeAnalysisResults가 변경될 때마다 렌더링
 
   return (
     <div className="report">
@@ -70,38 +116,26 @@ function Report() {
           <div className="titles">
             <div className="titleBox">시간복잡도</div>
             <div className="titleBox codeBox">코드스타일</div>
-            <div className="titleBox">메모리사용량</div>
-            <div className="titleBox">실행시간</div>
+            <div className="titleBox">메모리 사용량</div>
+            <div className="titleBox">실행 시간</div>
+            <div className="titleBox">테스트 케이스</div>
           </div>
-          {userAnswers.map((answer, index) => (
-            <div className="lineWrapper" key={index}>
-              <div className="num">#{index + 1}</div>
-              <div className="line">
-                <div className="timeComplex">O(n)</div>
-                <div className="codeStyle">
-                  {(answer.codeStyle || []).map((line, lineIndex) => (
-                    <div key={lineIndex}>{line}</div>
-                  ))}
-                </div>
-                <div className="memoryUse">74.2MB</div>
-                <div className="playTime">0.456789 seconds</div>
-              </div>
-            </div>
-          ))}
+          {loading ? <div>문서 생성 중 ...</div> : renderedCodeAnalysis}
         </div>
       </div>
+
       <div className='savAndMainBtn'>
         <div className='mainBtn'>
           <div className='btnText'>메인화면</div>
-          <div className='btnIcon'><IoHome size="20px"/></div>
+          <div className='btnIcon'><IoHome size="20px" /></div>
         </div>
         <div className='saveBtn'>
           <div className='btnText'>보고서 저장</div>
-          <div className='btnIcon'><BsFillSave2Fill size="20px"/></div>
+          <div className='btnIcon'><BsFillSave2Fill size="20px" /></div>
         </div>
       </div>
     </div>
   );
-}
+});
 
 export default Report;
