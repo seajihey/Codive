@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-
 from typing import Optional
 
 class QuestionCreate(BaseModel):
@@ -9,11 +8,11 @@ class QuestionCreate(BaseModel):
     class Config:
         from_attributes = True
         
-        
-
 class RoomCreate(BaseModel):
     codeID: str
     pw: str
+    class Config:
+        from_attributes = True
     
 class UserCreate(BaseModel):
     id: str
@@ -21,3 +20,12 @@ class UserCreate(BaseModel):
 
     class Config:
         from_attributes = True
+
+class RoomEnter(BaseModel):
+    codeID: str
+    pw: str
+
+    
+
+    
+
