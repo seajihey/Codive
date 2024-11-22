@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Depends, WebSocket
+from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -6,7 +7,7 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 from database import SessionLocal, engine
-from typing import List
+from typing import Dict, List
 from fastapi.responses import RedirectResponse
 import os
 import openai
@@ -30,6 +31,55 @@ def get_db():
         yield db
     finally:
         db.close()
+
+class ConnectionManager:
+    def __init__(self):
+        self.rooms: Dict[str, List[WebSocket]] = {}
+        self.started_rooms: set = set()
+
+    async def connect(self, room_id: str, websocket: WebSocket):
+        await websocket.accept()
+        if room_id not in self.rooms:
+            self.rooms[room_id] = []
+        self.rooms[room_id].append(websocket)
+        await self.broadcast_count(room_id)
+
+    async def disconnect(self, room_id: str, websocket: WebSocket):
+        self.rooms[room_id].remove(websocket)
+        if not self.rooms[room_id]:
+            del self.rooms[room_id]
+        else:
+            await self.broadcast_count(room_id)
+
+    async def broadcast(self, room_id: str, message: str):
+        if room_id in self.rooms:
+            for connection in self.rooms[room_id]:
+                await connection.send_text(message)
+
+    async def broadcast_count(self, room_id: str):
+        if room_id in self.rooms:
+            count_message = f"count:{len(self.rooms[room_id])}"
+            await self.broadcast(room_id, count_message)
+
+    def start_room(self, room_id: str):
+        self.started_rooms.add(room_id)
+
+    def is_room_started(self, room_id: str) -> bool:
+        return room_id in self.started_rooms
+
+manager = ConnectionManager()
+
+@app.websocket("/ws/{room_id}")
+async def websocket_endpoint(websocket: WebSocket, room_id: str):
+    await manager.connect(room_id, websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            if data == "start":
+                manager.start_room(room_id)
+                await manager.broadcast(room_id, f"Room {room_id} has started!")
+    except WebSocketDisconnect:
+         await manager.disconnect(room_id, websocket)
 
 ################# 질문 관련 api ####################
 @app.post("/api/questions")
@@ -63,41 +113,42 @@ def delete_question(question_id: int, db: Session = Depends(get_db)):
 
 ################ 입장시 게스트 생성 #####################
 
+# 방 시작 시 상태 업데이트
 @app.post("/api/room/enter")
 def enter_room(room_data: schemas.RoomEnter, db: Session = Depends(get_db)):
-    # 방 존재 여부 확인
+    # Check if the room exists
     room = db.query(models.Room).filter(models.Room.codeID == room_data.codeID).first()
-    
+
     if not room:
-        # 로그를 추가해 디버깅
-        print(f"Room with codeID {room_data.codeID} not found")
         raise HTTPException(status_code=404, detail="올바르지 않은 초대코드입니다.")
-    
-    # 비밀번호 확인
+
+    # Check if the room has already started
+    if manager.is_room_started(room_data.codeID):
+        raise HTTPException(status_code=400, detail="이미 시작된 방입니다.")
+
+    # Check password
     if room.pw != room_data.pw:
-        print(f"Password does not match for room with codeID {room_data.codeID}")
         raise HTTPException(status_code=403, detail="비밀번호가 일치하지 않습니다.")
-    
-    # 게스트 생성 로직
+
+    # Create guest logic
     existing_users = db.query(models.User).filter(models.User.id.like(f"{room_data.codeID}-%")).count()
     guest_id = f"{room_data.codeID}-{existing_users + 1}"
-    
+
     new_user = models.User(id=guest_id, is_guest=True)
     db.add(new_user)
     db.commit()
-    
+
     return {"guest_id": guest_id, "message": "성공적으로 방에 입장했습니다."}
 
-
-
-@app.delete("/api/room/{codeID}/guest/{guest_id}")
-def exit_room(codeID: str, guest_id: str, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id == guest_id, models.User.id.like(f"{codeID}-%")).first()
+@app.delete("/api/room/{room_id}/guest/{guest_id}")
+async def exit_room(room_id: str, guest_id: str, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == guest_id, models.User.id.like(f"{room_id}-%")).first()
     if user:
         db.delete(user)
         db.commit()
+        return {"message": "Guest has left and been removed from the database."}
     else:
-        raise HTTPException(status_code=404, detail="게스트엄서요")
+        raise HTTPException(status_code=404, detail="게스트를 찾을 수 없습니다.")
 
 @app.get("/api/room/{codeID}/guests", response_model=List[schemas.UserCreate])
 def read_all_guests_in_room(codeID: str, db: Session = Depends(get_db)):
@@ -126,11 +177,29 @@ def create_room(room: schemas.RoomCreate, db: Session = Depends(get_db)):
 
     return db_room
 
-
 @app.get("/api/room/all/", response_model=List[schemas.RoomCreate])
 def read_all_room(db: Session = Depends(get_db)):
     db_rooms = db.query(models.Room).all()
     return db_rooms
+
+@app.delete("/api/room/{codeID}")
+async def delete_room(codeID: str, db: Session = Depends(get_db)):
+    # 방이 존재하는지 확인
+    room = db.query(models.Room).filter(models.Room.codeID == codeID).first()
+    if not room:
+        raise HTTPException(status_code=404, detail="방을 찾을 수 없습니다.")
+
+    # 데이터베이스에서 방 삭제
+    db.delete(room)
+    db.commit()
+
+    # 모든 연결된 WebSocket 연결 종료
+    if codeID in manager.rooms:
+        for websocket in manager.rooms[codeID]:
+            await websocket.close()
+        del manager.rooms[codeID]
+
+    return {"message": "방이 삭제되었습니다."}
 
 ################## 질문 답 api######################
 @app.post("/api/answers", response_model=schemas.AnswerCreate)
