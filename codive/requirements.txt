@@ -3,3 +3,15 @@ uvicorn[standard]
 sqlalchemy
 alembic
 python-multipart
+concurrently --save-dev # npm install gogo
+eslint --save-dev   #npm install gogo
+prettier --save-dev #npm install goog
+pylint
+flake8
+black
+psutil
+
+docker
+piston-cli -U
+concurrently --save-dev
+passlib
