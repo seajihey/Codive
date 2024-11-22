@@ -55,12 +55,14 @@ function Room({ allowAICodeRecommendation }) {
   };  
 
   const nextProblem = () => {
+    sendCodeToBackend();
     if (currentProblem < 5) {
+      setAIResponse("AI 응답을 기다리는 중")
       setShowAIBox(false);
       setCurrentProblem(currentProblem + 1);
-      setCode('// 코드를 입력하세요');  // 상태를 디폴트 값으로 초기화
+      setCode('// 코드를 입력하세요');  
     } else {
-      sendCodeToBackend();
+
       navigate('/report');
     }
   };

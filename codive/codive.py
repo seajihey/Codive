@@ -258,10 +258,7 @@ def clean_code(code: str) -> str:
 import os
 import requests
 
-openai.api_key = ""
 
-
-# OpenAI API 키 설정
 
 # 요청 본문에 대한 Pydantic 모델 정의
 class GPTRequest(BaseModel):

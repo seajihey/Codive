@@ -1,3 +1,4 @@
+// App.js
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 
@@ -12,7 +13,9 @@ import Nav from './components/Nav';
 import "./App.css";
 
 function App() {
+  const [allowAICodeRecommendation, setAllowAICodeRecommendation] = useState(false);
   const location = useLocation();
+
   useEffect(() => {
     const socket = new WebSocket('ws://localhost:8000/ws');
     
@@ -29,14 +32,21 @@ function App() {
     };
   }, []);
 
-
   return (
     <div className="App">
       {location.pathname !== '/' && <Nav />}
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route 
+          path="/" 
+          element={
+            <Home 
+              allowAICodeRecommendation={allowAICodeRecommendation} 
+              setAllowAICodeRecommendation={setAllowAICodeRecommendation} 
+            />
+          } 
+        />
         <Route path="/report" element={<Report />} />
-        <Route path="/room" element={<Room />} />
+        <Route path="/room" element={<Room allowAICodeRecommendation={allowAICodeRecommendation} />} />
       </Routes>
     </div>
   );

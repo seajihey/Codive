@@ -6,7 +6,8 @@ import { BsFillSave2Fill } from "react-icons/bs";
 
 const Report = React.memo(() => {
   const [userAnswers, setUserAnswers] = useState([]);
-  const [guestCount, setGuestCount] = useState(0);
+  const [guestCount, setGuestCount] = useState(1);
+
   const [codeAnalysisResults, setCodeAnalysisResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const roomCode = "abd";
