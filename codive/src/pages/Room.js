@@ -1,16 +1,35 @@
-import React, { useState } from 'react';
-import '../Room.css';
-import { useNavigate } from 'react-router-dom';
-import { FaRobot, FaRegCheckCircle } from 'react-icons/fa';
-import { Editor } from '@monaco-editor/react';
-function Room() {
-  const [code, setCode] = useState('');  // 입력된 파이썬 코드 상태
-  const [showAIBox, setShowAIBox] = useState(false);
-  const [currentProblem, setCurrentProblem] = useState(1);
-  const navigate = useNavigate();
-  const [aiResponse, setAIResponse] = useState(""); // AI 응답 저장
 
-  // 문제 목록
+// src/pages/Room.js
+import React, { useState} from 'react';
+import '../Room.css';  // CSS 파일 import
+import { useNavigate } from 'react-router-dom';  // useNavigate import
+import { FaRobot, FaCircle, FaRegCircle } from 'react-icons/fa';  // 아이콘 import
+import { Editor } from '@monaco-editor/react';
+
+function Room() {
+  const [setCode] = useState('');  // 파이썬 코드 입력 상태
+  const [showAIBox, setShowAIBox] = useState(true);  // AI 추천 박스 상태
+  const [errorToggled, setErrorToggled] = useState(false);  // 오류 위치 토글 상태
+  const [currentProblem, setCurrentProblem] = useState(1);  // 현재 문제 번호 (1~5)
+  const navigate = useNavigate();  // useNavigate 훅 사용
+
+  //모나코 함수들
+  function handleEditorChange(value, event) {
+    // here is the current value
+  }
+  function handleEditorDidMount(editor, monaco) {
+    console.log('onMount: the editor instance:', editor);
+    console.log('onMount: the monaco instance:', monaco);
+  }
+  function handleEditorWillMount(monaco) {
+    console.log('beforeMount: the monaco instance:', monaco);
+  }
+  function handleEditorValidation(markers) {
+    // model markers
+    // markers.forEach(marker => console.log('onValidate:', marker.message));
+  }
+
+
   const problems = [
     "두 정수 A와 B를 입력받은 다음, A+B를 출력하는 프로그램을 작성하시오.",
     "세 정수 A, B, C를 입력받고, 그 중 가장 큰 값을 출력하는 프로그램을 작성하시오.",
@@ -63,6 +82,7 @@ function Room() {
       navigate('/report');
     }
   };
+
 
   // Editor 값 변경 핸들러
   const handleEditorChange = (value) => {
@@ -143,6 +163,7 @@ function Room() {
         {<FaRegCheckCircle className="icon" />}
         오류 위치 표시되는 중
       </label>
+
 
       <button className="aiButton" onClick={handleAIButtonClick}>
         <FaRobot className="icon" /> {showAIBox == true ? 'AI가 멘트를 추천하는 중':'AI가 추천하는 멘트 보기'}
