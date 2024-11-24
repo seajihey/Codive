@@ -8,6 +8,7 @@ function Home( {allowAICodeRecommendation, setAllowAICodeRecommendation}) {
   const [popupType, setPopupType] = useState('join');
   const [showWaitingPopup, setShowWaitingPopup] = useState(false);
 
+
   const [inviteCode, setInviteCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -15,10 +16,12 @@ function Home( {allowAICodeRecommendation, setAllowAICodeRecommendation}) {
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [allowTimeLimit, setAllowTimeLimit] = useState(false);
 
+
   const [inviteCodeErrorMessage, setInviteCodeErrorMessage] = useState('');
   const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
 
   const [nowPerson, setNowPerson] = useState(1);
+
 
   const navigate = useNavigate();
   const socketRef = useRef(null);
@@ -54,6 +57,7 @@ useEffect(() => {
     setShowPopup(false);
     setShowWaitingPopup(false);
     window.location.reload();
+
   };
 
   const resetForm = () => {
@@ -76,6 +80,7 @@ useEffect(() => {
       setPasswordMatch(false);
       return;
     }
+
 
     const endpoint = popupType === 'create' ? '/api/room_create' : '/api/room/enter';
     const body = JSON.stringify({ codeID: inviteCode, pw: password });
@@ -138,8 +143,10 @@ useEffect(() => {
         message = "알 수 없는 오류가 발생했습니다.";
         setInviteCodeErrorMessage(message);
         setPasswordErrorMessage(message);
+
     }
   };
+
 
   const isInputFilled = () => inviteCode.trim() !== '' && password.trim() !== '';
 
@@ -188,6 +195,7 @@ useEffect(() => {
     }
   };
 
+
   return (
     <div className="home-container">
       <header className="header">
@@ -225,6 +233,7 @@ useEffect(() => {
     </div>
   );
 }
+
 
 const InputField = ({ label, type = 'text', value, setValue, errorMessage = '', errorClass = '' }) => (
   <div className={`input-container ${errorClass}`}>
