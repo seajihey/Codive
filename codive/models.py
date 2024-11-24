@@ -35,3 +35,4 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     is_guest = Column(Boolean, default=True)
     answers = relationship("Answer", back_populates="user") 
+    finish  = Column(Boolean,default = False)

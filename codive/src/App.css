@@ -4,7 +4,6 @@
     box-sizing: border-box;
 }
 
-/* HTML 및 Body 기본 스타일 제거 */
 html, body {
     margin: 0;
     padding: 0;
@@ -13,7 +12,6 @@ html, body {
     overflow-x: hidden; 
 }
 
-/* App 컴포넌트 스타일 */
 .App {
     width: 100%;
     margin: 0;

@@ -17,7 +17,7 @@ class RoomCreate(BaseModel):
 class UserCreate(BaseModel):
     id: str
     is_guest: bool
-
+    finish : bool
     class Config:
         from_attributes = True
         
