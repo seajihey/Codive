@@ -1,17 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../Room.css';
 import { useNavigate } from 'react-router-dom';
 import { FaRobot, FaRegCheckCircle } from 'react-icons/fa';
 import { Editor } from '@monaco-editor/react';
 
+const getCookieValue = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
 function Room({ allowAICodeRecommendation }) {
-  const [code, setCode] = useState('');  // 입력된 파이썬 코드 상태
+  const [code, setCode] = useState(''); 
   const [showAIBox, setShowAIBox] = useState(false);
   const [currentProblem, setCurrentProblem] = useState(1);
   const navigate = useNavigate();
-  const [aiResponse, setAIResponse] = useState(""); // AI 응답 저장
-
-  // 문제 목록
+  const [aiResponse, setAIResponse] = useState(""); 
+  const [whouser, setWhoUser] = useState("");
   const problems = [
     "두 정수 A와 B를 입력받은 다음, A+B를 출력하는 프로그램을 작성하시오.",
     "세 정수 A, B, C를 입력받고, 그 중 가장 큰 값을 출력하는 프로그램을 작성하시오.",
@@ -20,65 +26,76 @@ function Room({ allowAICodeRecommendation }) {
     "두 정수 A와 B가 주어졌을 때, A와 B를 곱한 값을 출력하는 프로그램을 작성하시오."
   ];
 
-  // 백엔드로 코드 전송
+  useEffect(() => {
+    const guestId = getCookieValue('guest_id');
+    console.log(guestId);
+    setWhoUser(guestId);
+  }, []);
+
   const sendCodeToBackend = async () => {
-    try {
-      // 서버 요구 사항에 맞는 데이터를 생성
+     {
       const payload = {
-        content: code, // 작성된 코드
-        question_id: currentProblem, // 문제 번호 (정수)
-        user_id: "user123", // 사용자 ID (문자열)
+        content: code, 
+        question_id: currentProblem, 
+        user_id: whouser, 
       };
-  
-      console.log("Sending Payload:", payload); // 디버깅용 로그
-  
+
       const response = await fetch('http://localhost:8000/api/answers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload), // JSON 형태로 변환
+        body: JSON.stringify(payload),
       });
-  
+
       if (response.ok) {
         const result = await response.json();
         console.log('Server Response:', result);
-        alert('코드가 성공적으로 제출되었습니다.');
-      } else {
-        console.error('Error submitting code:', response.statusText);
-        alert('코드 제출 중 오류가 발생했습니다.');
+      } 
+  };  }
+
+  const finishUserSession = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/user/finish/${whouser}`, {
+        method: 'PATCH', 
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update user session');
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('네트워크 오류가 발생했습니다.');
+      console.error('Error updating user session:', error);
     }
-  };  
+  };
+
 
   const nextProblem = () => {
     sendCodeToBackend();
     if (currentProblem < 5) {
-      setAIResponse("AI 응답을 기다리는 중")
+      setAIResponse("AI 응답을 기다리는 중");
       setShowAIBox(false);
       setCurrentProblem(currentProblem + 1);
       setCode('// 코드를 입력하세요');  
     } else {
+      finishUserSession().then(() => {
+        alert('코드가 성공적으로 제출되었습니다.');
+        navigate('/report');
+      }).catch((error) => {
+        console.error('Error finishing user session:', error);
+      });
 
-      navigate('/report');
     }
   };
-
-  // Editor 값 변경 핸들러
   const handleEditorChange = (value) => {
     setCode(value);
   };
 
-  // 코드 형식 정리 함수
   const formatCode = (rawCode) => {
-    // 탭을 스페이스 4칸으로 변환
     let formattedCode = rawCode.replace(/\t/g, "    ");
-    // 불필요한 공백 제거 (양끝 트림)
     formattedCode = formattedCode.trim();
-    // 여러 줄바꿈을 하나로 통합
     formattedCode = formattedCode.replace(/\n\s*\n/g, "\n");
     return formattedCode;
   };
@@ -86,16 +103,16 @@ function Room({ allowAICodeRecommendation }) {
   const handleAIButtonClick = async () => {
     if (!allowAICodeRecommendation) return;
 
-    setShowAIBox((prevState) => !prevState); // Toggle showAIBox
+    setShowAIBox((prevState) => !prevState); 
   
-    if (!showAIBox) { // If AI box is closed, request data
-      const formattedCode = formatCode(code); // Format the code
-      const currentProblemStatement = problems[currentProblem - 1]; // Get the current problem statement
+    if (!showAIBox) { 
+      const formattedCode = formatCode(code); 
+      const currentProblemStatement = problems[currentProblem - 1]; 
   
       const payload = {
         user_code: formattedCode,
-        problem_statement: currentProblemStatement, // Include the problem statement
-        max_tokens: 100,  // Set the max_tokens as defined by server
+        problem_statement: currentProblemStatement, 
+        max_tokens: 100,
       };
   
       try {
@@ -151,14 +168,13 @@ function Room({ allowAICodeRecommendation }) {
       </label>
 
       <button className="aiButton" onClick={handleAIButtonClick} disabled={!allowAICodeRecommendation}>
-        <FaRobot className="icon" /> {showAIBox == true ? 'AI가 멘트를 추천하는 중':'AI가 추천하는 멘트 보기'}
+        <FaRobot className="icon" /> {showAIBox ? 'AI가 멘트를 추천하는 중':'AI가 추천하는 멘트 보기'}
       </button>
 
       <button className="nextButton" onClick={nextProblem}>
         {currentProblem < 5 ? '다음' : '제출'}
       </button>
 
-     {/* AI 추천 멘트 표시 */}
      {showAIBox && (
         <div>
           <p className="aiBoxTitle">AI 멘트 추천</p>
@@ -171,5 +187,4 @@ function Room({ allowAICodeRecommendation }) {
     </div>
   );
 }
-
 export default Room;

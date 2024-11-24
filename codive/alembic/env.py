@@ -76,6 +76,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-from codive.models import Base  # 모델이 정의된 모듈을 가져옴
-
-target_metadata = Base.metadata

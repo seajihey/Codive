@@ -2,11 +2,8 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css");
 
 
-/* 애니메이션 코드 */
 :root{
-  /**/
-  /*other default setting ...*/
-  /**/
+ 
     --secondary-glow: conic-gradient(
       from 10deg at 50% 50%,
       #eb7494 0deg,

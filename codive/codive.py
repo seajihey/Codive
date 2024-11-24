@@ -1,21 +1,18 @@
-from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect,Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 import models
 import schemas
 from database import SessionLocal, engine
 from typing import Dict, List
 from fastapi.responses import RedirectResponse
-import os
 import openai
 
 app = FastAPI()
 
 models.Base.metadata.create_all(bind=engine)
 
+room_users = {}
 
 app.add_middleware(
     CORSMiddleware,
@@ -113,69 +110,108 @@ def delete_question(question_id: int, db: Session = Depends(get_db)):
 
 ################ 입장시 게스트 생성 #####################
 
-# 방 시작 시 상태 업데이트
-@app.post("/api/room/enter")
-def enter_room(room_data: schemas.RoomEnter, db: Session = Depends(get_db)):
-    # Check if the room exists
-    room = db.query(models.Room).filter(models.Room.codeID == room_data.codeID).first()
+@app.get("/api/user/{user_id}")
+async def read_user(user_id: str, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"created_at": user.created_at}
 
+@app.post("/api/room/enter")
+def enter_room(response: Response,room_data: schemas.RoomEnter, db: Session = Depends(get_db)):
+    room = db.query(models.Room).filter(models.Room.codeID == room_data.codeID).first()
     if not room:
         raise HTTPException(status_code=404, detail="올바르지 않은 초대코드입니다.")
-
-    # Check if the room has already started
     if manager.is_room_started(room_data.codeID):
         raise HTTPException(status_code=400, detail="이미 시작된 방입니다.")
-
-    # Check password
     if room.pw != room_data.pw:
         raise HTTPException(status_code=403, detail="비밀번호가 일치하지 않습니다.")
 
-    # Create guest logic
     existing_users = db.query(models.User).filter(models.User.id.like(f"{room_data.codeID}-%")).count()
-    guest_id = f"{room_data.codeID}-{existing_users + 1}"
+    guest_id = f"{room_data.codeID}-{existing_users+1 }"
 
-    new_user = models.User(id=guest_id, is_guest=True)
+    new_user = models.User(id=guest_id, is_guest=True,finish = False)
     db.add(new_user)
     db.commit()
-
+    if room_data.codeID not in room_users:
+        room_users[room_data.codeID] = []
+    room_users[room_data.codeID].append(guest_id)
+    response.set_cookie(key="guest_id", value=guest_id) 
     return {"guest_id": guest_id, "message": "성공적으로 방에 입장했습니다."}
+@app.get("/api/room/{roomCode}/rank/{guest_id}")
+def get_user_rank(roomCode: str, guest_id: str, db: Session = Depends(get_db)):
+    try:
+        current_users = db.query(models.User).filter(
+            models.User.id.like(f"{roomCode}-%"), 
+            models.User.finish == False
+        ).order_by(models.User.id).all()
+        user_ids = [user.id for user in current_users]
+        print("Current Users IDs:", user_ids) 
+        print("Guest ID:", guest_id)  
+     
+        
+        rank = user_ids.index(guest_id) + 1
+        
+        return {"rank": rank, "total_users": len(current_users)}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-@app.delete("/api/room/{room_id}/guest/{guest_id}")
-async def exit_room(room_id: str, guest_id: str, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id == guest_id, models.User.id.like(f"{room_id}-%")).first()
-    if user:
-        db.delete(user)
-        db.commit()
-        return {"message": "Guest has left and been removed from the database."}
-    else:
-        raise HTTPException(status_code=404, detail="게스트를 찾을 수 없습니다.")
+
+
 
 @app.get("/api/room/{codeID}/guests", response_model=List[schemas.UserCreate])
 def read_all_guests_in_room(codeID: str, db: Session = Depends(get_db)):
     guests = db.query(models.User).filter(models.User.id.like(f"{codeID}-%")).all()
     return guests
 
+@app.get("/api/room/{codeID}/guestcount")
+def get_guest_count(codeID: str, db: Session = Depends(get_db)):
+    guest_count = db.query(models.User).filter(models.User.id.like(f"{codeID}-%")).count()
+    return {"guest_count": guest_count}
 ################# 방 생성 api ####################
 @app.post("/api/room_create", response_model=schemas.RoomCreate)
-def create_room(room: schemas.RoomCreate, db: Session = Depends(get_db)):
+def create_room(response: Response,room: schemas.RoomCreate, db: Session = Depends(get_db)):
     # 방 코드 중복 검사
     existing_room = db.query(models.Room).filter(models.Room.codeID == room.codeID).first()
     if existing_room:
         raise HTTPException(status_code=400, detail="중복된 코드입니다")  # 중복된 방 코드 처리
 
-    # 방 생성
     db_room = models.Room(codeID=room.codeID, pw=room.pw)
     db.add(db_room)
     db.commit()
     db.refresh(db_room)
     
-    # 방 생성 시 방을 만든 유저를 호스트로 저장
-    host_id = f"{room.codeID}-host"  # 방 코드에 'host'를 붙여서 호스트 ID 생성
-    new_host = models.User(id=host_id, is_guest=False)  # 호스트는 is_guest가 False로 설정됨
+    host_id = f"{room.codeID}-1" 
+    new_host = models.User(id=host_id, is_guest=False) 
     db.add(new_host)
     db.commit()
+    if room.codeID not in room_users:
+        room_users[room.codeID] = []
+    response.set_cookie(key="guest_id", value=host_id) 
+    response.set_cookie(key="inRoom", value=True) 
 
     return db_room
+@app.patch("/api/user/finish/{user_id}")
+def finish_user_session(user_id: str, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.finish = True
+    db.commit()
+    return {"message": "User session finished"}
+
+@app.get("/api/room/{roomCode}/user_stats")
+def get_user_stats(roomCode: str, db: Session = Depends(get_db)):
+    all_users = db.query(models.User).filter(models.User.id.like(f"{roomCode}-%")).all()
+    active_users = [user for user in all_users if not user.finish]
+    
+    return {
+        "total_users": len(all_users),
+        "active_users": len(active_users)
+    }
+
 
 @app.get("/api/room/all/", response_model=List[schemas.RoomCreate])
 def read_all_room(db: Session = Depends(get_db)):
@@ -184,16 +220,12 @@ def read_all_room(db: Session = Depends(get_db)):
 
 @app.delete("/api/room/{codeID}")
 async def delete_room(codeID: str, db: Session = Depends(get_db)):
-    # 방이 존재하는지 확인
     room = db.query(models.Room).filter(models.Room.codeID == codeID).first()
     if not room:
         raise HTTPException(status_code=404, detail="방을 찾을 수 없습니다.")
-
-    # 데이터베이스에서 방 삭제
     db.delete(room)
     db.commit()
 
-    # 모든 연결된 WebSocket 연결 종료
     if codeID in manager.rooms:
         for websocket in manager.rooms[codeID]:
             await websocket.close()
@@ -234,6 +266,30 @@ def read_answers_for_question(question_id: int, db: Session = Depends(get_db)):
     answers = db.query(models.Answer).filter(models.Answer.question_id == question_id).all()
     return answers
 
+from sqlalchemy.orm import Session
+from sqlalchemy import and_
+@app.get("/api/room/{roomCode}/rank/{guest_id}")
+def get_user_rank(roomCode: str, guest_id: str, db: Session = Depends(get_db)):
+    try:
+        current_users = db.query(models.User).filter(
+            and_(
+                models.User.room_code == roomCode,
+                models.User.finish == False
+            )
+        ).all()
+        guest = db.query(models.User).filter(models.User.id == guest_id).first()
+        if not guest:
+            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+        
+        rank = current_users.index(guest) + 1 if guest in current_users else None
+        
+        if rank is None:
+            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+        
+        return {"rank": rank}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 ############ report관련 도구 ############
 
 from pydantic import BaseModel
@@ -260,7 +316,7 @@ import requests
 
 
 
-# 요청 본문에 대한 Pydantic 모델 정의
+
 class GPTRequest(BaseModel):
     problem: str
     answer : str
@@ -269,13 +325,15 @@ class GPTRequest(BaseModel):
 @app.post("/generate-text/")
 async def generate_text(request: GPTRequest):
     try:
-        # OpenAI GPT API 호출
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # 사용할 모델 선택
+            model="gpt-3.5-turbo",  
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": (
-f"{request.problem}이문제에대한 답으로 다음과 같은 코드를 작성했어. {request.answer}이 코드를 실행시켰을 때 테스트케이스 통과 여부 하나, 시간복잡도, 코드스타일, 실행시간과 메모리사용량을적어줘. 간결하게 다른거 필요없고5개에대한 답만 dic형식으로 주면 되는데, 시간복잡도는 빅오표기로 O(n)이런식으로 계산해서주고 코드스타일은 PeP8기준으로 어떠어떠한 스타일이다 어떻게 개선하면좋다 ~~를 잘했닻라고   ~~함,~~음으로 답변해줘 한 코드스타일 답변 길이는 50단어 길이로 주고좋음. 잘함이런식으로적지마 단답으로적지마 실행시간은 ms로, 메모리사용량은 kb로 해줘 실행시간과 메모리 사용량은 실행환경에 따라 다르겠지만 네가 큰거 하나만 측정해줘 key값은 모두 영어로 test_pass,time_complexity,code_style,execution_time,memory_usage로 부탁행 value는 테스트케이스통과여부 줄때 통과 , 통과x로 하나라도 통과못하면 통과, 모두 통과하면  통과 해주고 주고 코드스타일과 한글로해주고 나머진 영어로주고 설명은 필요없어 절대 다른말붙이지말고 딕셔너리형태로 줘야해 실제환경과다를수있다 이런말도하지말고 그냥 네가 실행해보고 제일큰 결과만 줘. 절대 설명 붙이지말고 5개에 대한 key와 value로만 이루어진 딕셔너리형태로 반환해"  )}
+f'{request.problem}에 대한 답으로 작성한 코드는 다음과 같습니다: {request.answer}. 이 코드를 실행했을 때 얻은 결과를 딕셔너리 형식으로 반환해 주세요. 다른 설명이나 주석은 필요 없습니다. 형식 예시: {{"test_pass": "통과", "time_complexity": "O(1)", "code_style": "PEP8 준수", "execution_time": "0.5ms", "memory_usage": "100kb"}}.만약 실행되지 않거나 틀린 코드라면, {{"test_pass": "통과x", "time_complexity": "x", "code_style": "x", "execution_time": "x", "memory_usage": "x"}} 만약 코드 제출이 없다면 {{"test_pass": "통과x", "time_complexity": "코드제출 x", "code_style": "코드제출 x", "execution_time": "코드제출x", "memory_usage": "코드제출 x"}}.형식으로만 응답하세요.'
+'                코드스타일 설명할 때 딱 pep8준수 , 잘함, 우수함 이따구로 적지말고어떻게 고치면 더 좋은 코드가 될지 간결하게 말해달란거였어'
+'제발 실행이 가능한 코드는 실행하고 문제에 맞게 출력물이 나오는지 확인하고 안나오면 테스트케이스 통과 x , 나오면 통과로 적어줘. 그리고 메모리사용량이나 실행시간은 데이터에 따라 다름이러지말고 높은 값 하나만 보내줘. '
+  )}
             ],
             max_tokens=request.max_tokens
         )
@@ -290,16 +348,13 @@ f"{request.problem}이문제에대한 답으로 다음과 같은 코드를 작�
     
     
 from pydantic import BaseModel
-# 요청 데이터 모델 정의
 class GPTRequest(BaseModel):
-    user_code: str  # 사용자가 작성한 코드
-    max_tokens: int = 100  # 생성 텍스트 제한
-    problem_statement: str  # 문제 설명
+    user_code: str 
+    max_tokens: int = 200  
+    problem_statement: str  
 
-# OpenAI GPT 호출 엔드포인트
 @app.post("/generate-hint/")
 async def generate_hint(request: GPTRequest):
-        # OpenAI ChatCompletion 호출
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
