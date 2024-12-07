@@ -30,12 +30,11 @@
   z-index: -1;
   opacity:0.8
   }
-
   body::before {
     background: var(--third-glow);
     border-radius: 50%;
-    width: 50vw;
-    height: 50vw;
+    width: 100vmin;
+    height: 100vmin;
     margin-left: -10.4167vw; /* 200px -> 10.4167vw */
     filter: blur(4.6875vw); /* 90px -> 4.6875vw */
     top: calc(50vh - 50vw / 2);
@@ -47,8 +46,8 @@
 body::after {
   background: var(--secondary-glow);
   border-radius: 50%;
-  width: 26.0417vw; /* 500px -> 26.0417vw */
-  height: 36.4583vh; /* 700px -> 36.4583vh */
+  width:60vmin;
+  height: 60vmin;
   filter: blur(4.6875vw); /* 90px -> 4.6875vw */
   top: calc(50vh - 50vw / 2);
   left: calc(50vw - 50vw / 2);

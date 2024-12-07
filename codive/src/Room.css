@@ -8,7 +8,9 @@
   margin-top: 1.5vh;
   font-family: "Pretendard-Regular";
 }
-
+*{
+  white-space: pre-line
+}
 .nextButton {
   width: 8vw;
   height: 6vh;

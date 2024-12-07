@@ -16,7 +16,7 @@ room_users = {}
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:2000","http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],  
     allow_headers=["*"],
@@ -315,6 +315,7 @@ import os
 import requests
 
 
+openai.api_key = "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"
 
 class GPTRequest(BaseModel):
     problem: str
@@ -329,9 +330,12 @@ async def generate_text(request: GPTRequest):
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": (
-f'{request.problem}에 대한 답으로 작성한 코드는 다음과 같습니다: {request.answer}. 이 코드를 실행했을 때 얻은 결과를 딕셔너리 형식으로 반환해 주세요. 다른 설명이나 주석은 필요 없습니다. 형식 예시: {{"test_pass": "통과", "time_complexity": "O(1)", "code_style": "PEP8 준수", "execution_time": "0.5ms", "memory_usage": "100kb"}}.만약 실행되지 않거나 틀린 코드라면, {{"test_pass": "통과x", "time_complexity": "x", "code_style": "x", "execution_time": "x", "memory_usage": "x"}} 만약 코드 제출이 없다면 {{"test_pass": "통과x", "time_complexity": "코드제출 x", "code_style": "코드제출 x", "execution_time": "코드제출x", "memory_usage": "코드제출 x"}}.형식으로만 응답하세요.'
-'                코드스타일 설명할 때 딱 pep8준수 , 잘함, 우수함 이따구로 적지말고어떻게 고치면 더 좋은 코드가 될지 간결하게 말해달란거였어'
-'제발 실행이 가능한 코드는 실행하고 문제에 맞게 출력물이 나오는지 확인하고 안나오면 테스트케이스 통과 x , 나오면 통과로 적어줘. 그리고 메모리사용량이나 실행시간은 데이터에 따라 다름이러지말고 높은 값 하나만 보내줘. '
+f'{request.problem}에 대한 답으로 작성한 코드는 다음과 같습니다: {request.answer}. 이 코드에대한 시간복잡도(빅오표기법)와 코드스타일 정보,테스트케이스 통과여부를 닥셔너리 형식으로 반환해 주세요.'
+'다른 설명이나 주석은 필요 없습니다. 형식 예시: {{ "time_complexity": "", "code_style": "","test_case":""}}. '
+'만약 코드 제출이 없다면 {{"time_complexity": "코드제출 x", "code_style": "코드제출 x","test_case":"미통과"}}.형식으로만 응답하세요.'
+'빅오표기법으로 시간복잡도를 주면 되는데, 테스트케이스가 통과 하지 못하면 미통과라고 적어주면돼'
+'코드스타일은 테스트케이스가 통과하면 ,현재 pep8준수 or pep8미준수(어떤게문제인지) + 해당코드가 어떻게 하면 더 잘 적힐 수 있을지 최소 10단어 이상, 20단어이내로 적어줘.테스트케이스를 통과 하지 못하면 미통과라고 적어줘. 코드제출을 하지 않았다면 코드제출 x라고 써줘'
+'테스트케이스는 네가 임의의 숫자를 넣어서 정답이 잘 나오는지 확인하고 잘 나오면 통과 , 아니면 미통과라고 적어줘.'
   )}
             ],
             max_tokens=request.max_tokens
@@ -368,3 +372,40 @@ async def generate_hint(request: GPTRequest):
             max_tokens=request.max_tokens
         )
         return response.choices[0].message
+
+import subprocess
+import json
+import textwrap
+
+
+class CodeRequest(BaseModel):
+    code: str
+
+@app.post("/execute-code/")
+async def execute_code(request: CodeRequest):
+    print(type(request))
+    input_data = json.dumps({"code": request.code})
+    print(input_data)
+    try:
+        result = subprocess.run(
+            ["python", "d.py"],  
+            input=input_data,
+            text=True,
+            capture_output=True
+        )
+
+        if result.returncode != 0:
+            raise HTTPException(status_code=500, detail="Script execution failed")
+
+        output = result.stdout.strip()
+        result_data = json.loads(output)
+
+        return {
+            "stdout": result_data.get("stdout", ""),
+            "error": result_data.get("error", ""),
+            "execution_time": result_data.get("execution_time"),
+            "memory_usage": result_data.get("memory_usage")
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
