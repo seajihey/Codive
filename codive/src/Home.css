@@ -334,3 +334,30 @@ input:focus {
 .custom-checkbox:checked + .custom-checkbox-label::before {
   opacity: 1;
 }
+
+.time-limit-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -3.7vh; /* 위로 올리기 위해 음수 값 사용 */
+  gap: 10px; /* 레이블과 셀렉트 박스 사이의 간격 */
+}
+
+.time-limit-container label {
+  font-size: 1rem; /* 레이블 폰트 크기 */
+  margin-right: 5px; /* 레이블과 셀렉트 박스 사이의 간격 */
+}
+
+.time-limit-container select {
+  font-size: 1rem; /* 셀렉트 박스의 폰트 크기 */
+  padding: 5px 10px; /* 내부 여백 조절 */
+  border-radius: 8px; /* 둥근 모서리 */
+  border: 2px solid #ccc; /* 테두리 색상 */
+  background-color: #f9f9f9; /* 배경 색상 */
+  transition: box-shadow 0.3s ease, border-color 0.3s ease; /* 부드러운 효과 */
+}
+
+.time-limit-container select:focus {
+  outline: none; /* 기본 포커스 아웃라인 제거 */
+  border-color: #757575; /* 포커스 시 테두리 색상 */
+}

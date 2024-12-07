@@ -6,7 +6,7 @@ import schemas
 from database import SessionLocal, engine
 from typing import Dict, List
 from fastapi.responses import RedirectResponse
-import openai
+#import openai
 
 app = FastAPI()
 
@@ -137,6 +137,7 @@ def enter_room(response: Response,room_data: schemas.RoomEnter, db: Session = De
         room_users[room_data.codeID] = []
     room_users[room_data.codeID].append(guest_id)
     response.set_cookie(key="guest_id", value=guest_id) 
+    response.set_cookie(key="elapsedTime", value="0")
     return {"guest_id": guest_id, "message": "성공적으로 방에 입장했습니다."}
 @app.get("/api/room/{roomCode}/rank/{guest_id}")
 def get_user_rank(roomCode: str, guest_id: str, db: Session = Depends(get_db)):
@@ -189,9 +190,11 @@ def create_room(response: Response,room: schemas.RoomCreate, db: Session = Depen
     if room.codeID not in room_users:
         room_users[room.codeID] = []
     response.set_cookie(key="guest_id", value=host_id) 
+    response.set_cookie(key="elapsedTime", value="0")
     response.set_cookie(key="inRoom", value=True) 
 
     return db_room
+
 @app.patch("/api/user/finish/{user_id}")
 def finish_user_session(user_id: str, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
