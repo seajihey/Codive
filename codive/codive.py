@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect,Response
+from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -81,14 +81,6 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
                 await manager.broadcast(room_id, f"Room {room_id} has started!")
     except WebSocketDisconnect:
          await manager.disconnect(room_id, websocket)
-
-@app.get("/", response_class=FileResponse)
-async def read_index():
-    index_path = os.path.join('build', 'index.html')
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
-    else:
-        raise HTTPException(status_code=404, detail="index.html not found")
 
 ################# 질문 관련 api ####################
 @app.post("/api/questions")
