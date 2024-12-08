@@ -1,6 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 import models
 import schemas
@@ -8,11 +7,8 @@ from database import SessionLocal, engine
 from typing import Dict, List
 from fastapi.responses import RedirectResponse
 #import openai
-import os
 
 app = FastAPI()
-
-app.mount("/static", StaticFiles(directory="build/static"), name="static")
 
 models.Base.metadata.create_all(bind=engine)
 
