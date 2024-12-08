@@ -56,7 +56,7 @@ function Nav() {
 
   const fetchUserStats = async () => {
     try {
-      const response = await fetch(`https://codive-backend.onrender.com/api/room/${roomCode}/user_stats`);
+      const response = await fetch(`/api/room/${roomCode}/user_stats`);
       const data = await response.json();
       setRemainingUsers(data.active_users);
       setTotalUsers(data.total_users);

@@ -56,7 +56,7 @@ function Room({ allowAICodeRecommendation }) {
 
   const finishUserSession = async () => {
     try {
-      const response = await fetch(`https://codive-backend.onrender.com/api/user/finish/${whouser}`, {
+      const response = await fetch(`/api/user/finish/${whouser}`, {
         method: 'PATCH', 
         headers: {
           'Content-Type': 'application/json',
