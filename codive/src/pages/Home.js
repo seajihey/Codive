@@ -78,7 +78,7 @@ function Home({ allowAICodeRecommendation, setAllowAICodeRecommendation }) {
       return;
     }
 
-    const endpoint = popupType === 'create' ? '/api/room_create' : '/api/room/enter';
+    const endpoint = popupType === 'create' ? 'https://codive-frontend.onrender.com/api/room_create' : 'https://codive-frontend.onrender.com/api/room/enter';
     const body = JSON.stringify({ codeID: inviteCode, pw: password });
 
     try {
