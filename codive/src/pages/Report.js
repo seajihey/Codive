@@ -66,7 +66,7 @@ const Report = React.memo(() => {
     const fetchRank = async () => {
       if (!roomCode || !currentUser) return;
       try {
-        const response = await fetch(`/api/room/${roomCode}/user_stats`);
+        const response = await fetch(`https://codive-backend.onrender.com/api/room/${roomCode}/user_stats`);
         if (!response.ok) {
           throw new Error('Failed to fetch rank');
         }
@@ -86,8 +86,8 @@ const Report = React.memo(() => {
       if (!roomCode) return;
       try {
         const [answersResponse, guestCountResponse] = await Promise.all([
-          fetch(`/api/answers/`),
-          fetch(`/api/room/${roomCode}/guestcount`)
+          fetch(`https://codive-backend.onrender.com/api/answers/`),
+          fetch(`https://codive-backend.onrender.com/api/room/${roomCode}/guestcount`)
         ]);
   
         if (!answersResponse.ok || !guestCountResponse.ok) {
