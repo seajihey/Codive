@@ -11,8 +11,6 @@ import openai
 
 app = FastAPI()
 
-app.mount("/", StaticFiles(directory="path/to/build", html=True), name="static")
-
 models.Base.metadata.create_all(bind=engine)
 
 room_users = {}
