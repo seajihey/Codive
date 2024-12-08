@@ -52,7 +52,7 @@ function Nav() {
   
 
   useEffect(() => {
-    document.cookie = `remainingUsers=${remainingUsers}; path=/`;
+    document.cookie = `remainingUsers=${remainingUsers}; path=/; SameSite=Lax; Secure`;
   }, [remainingUsers]);
 
   const fetchUserStats = async () => {
