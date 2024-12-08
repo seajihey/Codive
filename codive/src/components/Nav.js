@@ -33,22 +33,23 @@ function Nav() {
 
   useEffect(() => {
     if (!roomCode) return;
-
+  
     fetchUserStats();
-
+  
     let timer;
     if (location.pathname !== '/report') {
       timer = setInterval(() => {
         setElapsedTime(prevTime => {
           const newTime = prevTime + 1;
-          document.cookie = `elapsedTime=${newTime}; path=/`;
+          document.cookie = `elapsedTime=${newTime}; path=/; SameSite=Lax; Secure`;
           return newTime;
         });
       }, 1000);
     }
-
+  
     return () => clearInterval(timer);
   }, [roomCode, location.pathname]);
+  
 
   useEffect(() => {
     document.cookie = `remainingUsers=${remainingUsers}; path=/`;
