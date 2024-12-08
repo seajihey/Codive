@@ -116,7 +116,7 @@ function Room({ allowAICodeRecommendation }) {
       };
   
       try {
-        const response = await fetch("/generate-hint/", {
+        const response = await fetch("https://codive-backend.onrender.com/generate-hint/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

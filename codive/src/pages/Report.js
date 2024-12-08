@@ -114,7 +114,7 @@ const Report = React.memo(() => {
         const analysisResults = await Promise.all(relevantQuestions.map(async (question) => {
           const answer = filteredAnswers.find(ans => ans.question_id === question.id);
           try {
-            const response = await fetch(`/generate-text/`, {
+            const response = await fetch(`https://codive-backend.onrender.com/generate-text/`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
