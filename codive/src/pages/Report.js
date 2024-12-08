@@ -17,6 +17,7 @@ const deleteSpecificCookie = (name) => {
 
 const Report = React.memo(() => {
   const [userAnswers, setUserAnswers] = useState([]);
+
   const [codeAnalysisResults, setCodeAnalysisResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState("");  // renamed to `currentUser` for clarity

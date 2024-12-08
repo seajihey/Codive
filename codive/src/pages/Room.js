@@ -86,6 +86,7 @@ function Room({ allowAICodeRecommendation }) {
       }).catch((error) => {
         console.error('Error finishing user session:', error);
       });
+
     }
   };
   const handleEditorChange = (value) => {

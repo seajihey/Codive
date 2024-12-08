@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../Home.css';
 import "../waiting.css";
 
-function Home( {allowAICodeRecommendation, setAllowAICodeRecommendation}) {
+function Home({ allowAICodeRecommendation, setAllowAICodeRecommendation }) {
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState('join');
   const [showWaitingPopup, setShowWaitingPopup] = useState(false);
@@ -14,6 +14,7 @@ function Home( {allowAICodeRecommendation, setAllowAICodeRecommendation}) {
 
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [allowTimeLimit, setAllowTimeLimit] = useState(false);
+  const [timeLimit, setTimeLimit] = useState(30);
 
   const [inviteCodeErrorMessage, setInviteCodeErrorMessage] = useState('');
   const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
@@ -23,26 +24,26 @@ function Home( {allowAICodeRecommendation, setAllowAICodeRecommendation}) {
   const navigate = useNavigate();
   const socketRef = useRef(null);
 
-useEffect(() => {
-  if (showWaitingPopup) {
-    socketRef.current = new WebSocket(`ws://localhost:8000/ws/${inviteCode}`);
+  useEffect(() => {
+    if (showWaitingPopup) {
+      socketRef.current = new WebSocket(`ws://localhost:8000/ws/${inviteCode}`);
 
-    socketRef.current.onmessage = (event) => {
-      if (event.data.includes("started")) {
-        navigate('/room');
-      } else if (event.data.startsWith("count:")) {
-        const count = parseInt(event.data.split(":")[1], 10);
-        setNowPerson(count);
-      }
-    };
+      socketRef.current.onmessage = (event) => {
+        if (event.data.includes("started")) {
+          navigate('/room');
+        } else if (event.data.startsWith("count:")) {
+          const count = parseInt(event.data.split(":")[1], 10);
+          setNowPerson(count);
+        }
+      };
 
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
-    };
-  }
-}, [showWaitingPopup, inviteCode, navigate]);
+      return () => {
+        if (socketRef.current) {
+          socketRef.current.close();
+        }
+      };
+    }
+  }, [showWaitingPopup, inviteCode, navigate]);
 
   const handleOpenPopup = (type) => {
     setShowPopup(true);
@@ -178,6 +179,21 @@ useEffect(() => {
             <h2>그룹 생성</h2>
             <p><br />그룹의 설정을 마무리 하세요.</p>
             <OptionField label="제한 시간 설정" checked={allowTimeLimit} setChecked={setAllowTimeLimit} />
+            {allowTimeLimit && (
+              <div className="time-limit-container">
+                <label htmlFor="timeLimit">:</label>
+                <select
+                  id="timeLimit"
+                  value={timeLimit}
+                  onChange={(e) => setTimeLimit(parseInt(e.target.value))}
+                >
+                  <option value={30}>30분</option>
+                  <option value={60}>60분</option>
+                  <option value={90}>90분</option>
+                  <option value={120}>120분</option>
+                </select>
+              </div>
+            )}
             <OptionField label="AI 힌트 허용" checked={allowAICodeRecommendation} setChecked={setAllowAICodeRecommendation} />
             <button className="popup-create-button" onClick={handleStartRoom} style={{ backgroundColor: '#3100AE' }}>시작하기</button>
             <button className="popup-create-button" onClick={() => setShowWaitingPopup(true)} style={{ backgroundColor: '#3100AE' }}>생성</button>
@@ -229,7 +245,12 @@ useEffect(() => {
 const InputField = ({ label, type = 'text', value, setValue, errorMessage = '', errorClass = '' }) => (
   <div className={`input-container ${errorClass}`}>
     <label>{label}</label>
-    <input type={type} value={value} onChange={(e) => setValue(e.target.value)} />
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      maxLength={100}
+    />
     {errorMessage && <p className="error-message">{errorMessage}</p>}
   </div>
 );
