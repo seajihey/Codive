@@ -11,7 +11,7 @@ from fastapi.responses import RedirectResponse
 
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="/build"), name="static")
+app.mount("/static", StaticFiles(directory="build"), name="static")
 
 models.Base.metadata.create_all(bind=engine)
 
