@@ -20,7 +20,7 @@ room_users = {}
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://codive-frontend.onrender.com"],
     allow_credentials=True,
     allow_methods=["*"],  
     allow_headers=["*"],
