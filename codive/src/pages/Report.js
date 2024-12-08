@@ -86,8 +86,8 @@ const Report = React.memo(() => {
       if (!roomCode) return;
       try {
         const [answersResponse, guestCountResponse] = await Promise.all([
-          fetch(`http://127.0.0.1:8000/api/answers/`),
-          fetch(`http://127.0.0.1:8000/api/room/${roomCode}/guestcount`)
+          fetch(`/api/answers/`),
+          fetch(`/api/room/${roomCode}/guestcount`)
         ]);
   
         if (!answersResponse.ok || !guestCountResponse.ok) {
@@ -114,7 +114,7 @@ const Report = React.memo(() => {
         const analysisResults = await Promise.all(relevantQuestions.map(async (question) => {
           const answer = filteredAnswers.find(ans => ans.question_id === question.id);
           try {
-            const response = await fetch(`http://127.0.0.1:8000/generate-text/`, {
+            const response = await fetch(`/generate-text/`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

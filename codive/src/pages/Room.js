@@ -40,7 +40,7 @@ function Room({ allowAICodeRecommendation }) {
         user_id: whouser, 
       };
 
-      const response = await fetch('http://localhost:8000/api/answers', {
+      const response = await fetch('/api/answers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ function Room({ allowAICodeRecommendation }) {
 
   const finishUserSession = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/user/finish/${whouser}`, {
+      const response = await fetch(`/api/user/finish/${whouser}`, {
         method: 'PATCH', 
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ function Room({ allowAICodeRecommendation }) {
       };
   
       try {
-        const response = await fetch("http://localhost:8000/generate-hint/", {
+        const response = await fetch("/generate-hint/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

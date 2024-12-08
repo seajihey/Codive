@@ -26,7 +26,7 @@ function Home({ allowAICodeRecommendation, setAllowAICodeRecommendation }) {
 
   useEffect(() => {
     if (showWaitingPopup) {
-      socketRef.current = new WebSocket(`ws://localhost:8000/ws/${inviteCode}`);
+      socketRef.current = new WebSocket(`wss://codive-backend.onrender.com/ws/${inviteCode}`);
 
       socketRef.current.onmessage = (event) => {
         if (event.data.includes("started")) {
