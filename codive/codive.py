@@ -7,11 +7,11 @@ import schemas
 from database import SessionLocal, engine
 from typing import Dict, List
 from fastapi.responses import RedirectResponse
-import openai
+#import openai
 
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="build"), name="static")
+app.mount("/static", StaticFiles(directory="/build"), name="static")
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -80,6 +80,10 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
                 await manager.broadcast(room_id, f"Room {room_id} has started!")
     except WebSocketDisconnect:
          await manager.disconnect(room_id, websocket)
+
+@app.get("/")
+async def read_index():
+    return RedirectResponse(url="/static")
 
 ################# 질문 관련 api ####################
 @app.post("/api/questions")
