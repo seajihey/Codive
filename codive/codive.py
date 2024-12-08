@@ -8,10 +8,11 @@ from database import SessionLocal, engine
 from typing import Dict, List
 from fastapi.responses import RedirectResponse
 #import openai
+import os
 
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="build"), name="static")
+app.mount("/static", StaticFiles(directory="build/static"), name="static")
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -81,9 +82,13 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
     except WebSocketDisconnect:
          await manager.disconnect(room_id, websocket)
 
-@app.get("/")
+@app.get("/", response_class=FileResponse)
 async def read_index():
-    return RedirectResponse(url="/static")
+    index_path = os.path.join('build', 'index.html')
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    else:
+        raise HTTPException(status_code=404, detail="index.html not found")
 
 ################# 질문 관련 api ####################
 @app.post("/api/questions")
