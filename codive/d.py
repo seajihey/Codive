@@ -16,7 +16,6 @@ def stdoutIO(stdout=None):
     sys.stdout = old  # 실행 후 기존 stdout으로 복구
 
 def measure_performance(code):
-    start_time = time.perf_counter()  # 실행 시간 측정 시작
     tracemalloc.start()  # 메모리 추적 시작
 
     try:

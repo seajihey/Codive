@@ -19,175 +19,175 @@ const Report = React.memo(() => {
   const [userAnswers, setUserAnswers] = useState([]);
   const [codeAnalysisResults, setCodeAnalysisResults] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setWhoUser] = useState("");
+  const [currentUser, setCurrentUser] = useState("");  // renamed to `currentUser` for clarity
   const [rank, setRank] = useState(null);
   const [totalUsers, setTotalUsers] = useState(0);
   const [roomCode, setRoomCode] = useState("");
 
   const problems = [
     "",
-    { problem: "두 정수 A와 B를 입력받은 다음, A+B를 출력하는 프로그램을 작성하시오.", correctAnswer: "55" },
-    { problem: "세 정수 A, B, C를 입력받고, 그 중 가장 큰 값을 출력하는 프로그램을 작성하시오.", correctAnswer: "280" },
-    { problem: "정수 N이 주어질 때, 1부터 N까지의 합을 구하는 프로그램을 작성하시오.", correctAnswer: "5" },
-    { problem: "문자열 S가 주어졌을 때, S의 길이를 출력하는 프로그램을 작성하시오.", correctAnswer: "5" },
-    { problem: "부분 집합 생성하기", correctAnswer: "부분 집합 출력 결과" }
+    { problem: "두 정수 A와 B를 입력받은 다음, A+B를 출력하는 프로그램을 작성하시오.", correctAnswer: "55", testCases: ["30\n25"] },
+    { problem: "세 정수 A, B, C를 입력받고, 그 중 가장 큰 값을 출력하는 프로그램을 작성하시오.", correctAnswer: "280", testCases: ["100\n200\n280"] },
+    { problem: "두 값을 입력받고, 첫 번째 값을 두 번째 값으로 나눈 몫을 출력하는 프로그램을 작성하시오.", correctAnswer: "3", testCases: ["10\n3"] },
+    { problem: "리스트를 입력받고, 그 중 짝수의 개수를 출력하는 프로그램을 작성하시오.", correctAnswer: "2", testCases: ["1 2 3 4 5"] },
   ];
 
   useEffect(() => {
-    if (!sessionStorage.getItem('reloaded')) {
-      sessionStorage.setItem('reloaded', 'true');
-      window.location.reload();
-    }
-  }, []);
-
-  useEffect(() => {
-    setUserAnswers([]);
-    setCodeAnalysisResults([]);
-    setLoading(true);
     const guestId = getCookieValue('guest_id');
-    setWhoUser(guestId);
+    setCurrentUser(guestId);
     if (guestId) {
       const roomId = guestId.split('-')[0];
       setRoomCode(roomId);
     }
   }, []);
-
   useEffect(() => {
-    if (!window.location.search.includes('reloaded=true')) {
-      const newUrl = window.location.href.includes('?')
-        ? `${window.location.href}&reloaded=true`
-        : `${window.location.href}?reloaded=true`;
-      window.location.replace(newUrl);
-    }
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!roomCode || !currentUser) return;  
-      if (!loading) return; 
-      setLoading(true); 
+    const fetchRank = async () => {
+      if (!roomCode || !currentUser) return;
       try {
-        const [answersResponse, guestCountResponse] = await Promise.all([
-          fetch(`http://127.0.0.1:8000/api/answers/`),
-          fetch(`http://127.0.0.1:8000/api/room/${roomCode}/guestcount`)
-        ]);
-
-        if (!answersResponse.ok || !guestCountResponse.ok) {
-          throw new Error('Failed to fetch data');
+        const response = await fetch(`/api/room/${roomCode}/user_stats`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch rank');
         }
-
-        const guestCountData = await guestCountResponse.json();
-        setTotalUsers(guestCountData.guest_count);
-
-        const answersData = await answersResponse.json();
-        const filteredAnswers = answersData.filter(answer => answer.user_id === currentUser);
-        setUserAnswers(filteredAnswers);
-
-        const analysisResults = [];
-        for (const [index, answer] of filteredAnswers.entries()) {
-          try {
-            const escapedCode = escapeCode(answer.content);
-            
-            // 코드 실행 및 결과 가져오기
-            const executionResponse = await fetch(`http://localhost:8000/execute-code/`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ 
-                code: escapedCode,
-              })
-            });
-
-            const executionResult = await executionResponse.json();
-            const expectedAnswer = problems[index + 1]?.correctAnswer;
-            const isTestPass = executionResult.stdout?.trim() == expectedAnswer ? "통과" : "미통과";
-
-            // 시간 복잡도 및 코드 스타일 가져오기
-            const gptResponse = await fetch(`http://localhost:8000/generate-text/`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ 
-                problem: problems[index + 1]?.problem,
-                answer: escapedCode,
-                max_tokens: 100
-              })
-            });
-
-            const gptResult = await gptResponse.json();
-            const { time_complexity, code_style } = JSON.parse(gptResult.generated_text);
-
-            analysisResults.push({
-              ...executionResult,
-              test_pass: isTestPass,
-              time_complexity,
-              code_style
-            });
-          } catch (error) {
-            analysisResults.push({
-              test_pass: "미통과",
-              time_complexity: "코드제출 x",
-              code_style: "코드제출 x",
-              execution_time: "코드제출x",
-              memory_usage: "코드제출 x"
-            });
-          }
-        }
-
-        setCodeAnalysisResults(analysisResults);
-        setLoading(false); 
+        const data = await response.json();
+        setRank(data.total_users - data.active_users);
+        setTotalUsers(data.total_users);
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setLoading(false);
+        console.error('Error fetching rank:', error);
       }
     };
 
-    fetchData();
-  }, [roomCode, currentUser, loading]);
+    fetchRank();
+  }, [roomCode, currentUser]);
 
   useEffect(() => {
-    window.addEventListener('beforeunload', () => {
-      deleteSpecificCookie('elapsedTime');
-    });
-  }, []);
-
+    const fetchData = async () => {
+      if (!roomCode || !currentUser || !loading) return;
+      setLoading(true);
+      try {
+        // Fetch answers and guest count concurrently
+        const [answersResponse, guestCountResponse] = await Promise.all([
+          fetch(`http://127.0.0.1:8000/api/answers/`),
+          fetch(`http://127.0.0.1:8000/api/room/${roomCode}/guestcount`),
+        ]);
+  
+        if (!answersResponse.ok || !guestCountResponse.ok) {
+          throw new Error('Failed to fetch data');
+        }
+  
+        const guestCountData = await guestCountResponse.json();
+        setTotalUsers(guestCountData.guest_count);
+  
+        const answersData = await answersResponse.json();
+        const filteredAnswers = answersData.filter(answer => answer.user_id === currentUser);
+        setUserAnswers(filteredAnswers);
+  
+        // Process each answer and fetch code analysis
+        for (let i = 0; i < filteredAnswers.length; i++) {
+          const answer = filteredAnswers[i];
+  
+          try {
+            const escapedCode = escapeCode(answer.content);
+            console.log(escapedCode)
+            console.log(answer.content)
+            // Code execution and analysis
+            const executionResponse = await fetch(`http://localhost:8000/execute-TimeAndResult`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                code: escapedCode,
+                input_data: problems[i + 1]?.testCases.join("\n"),
+              }),
+            });
+  
+            const executionResult = await executionResponse.json();
+            const expectedAnswer = problems[i + 1]?.correctAnswer;
+            const isTestPass = executionResult.output?.trim() === expectedAnswer ? "통과" : "미통과";
+            const isTime = executionResult.execution_time;
+            const isMemo = executionResult.memory_used_kb;
+  
+            // Request for code analysis (time complexity, code style)
+            const analysisResponse = await fetch("http://127.0.0.1:8000/generate-text/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                problem: problems[i + 1]?.problem,
+                answer: escapedCode,
+                max_tokens: 200, // Adjust as needed
+              }),
+            });
+  
+            const analysisData = await analysisResponse.json();
+            const analysis = analysisData.generated_text ? JSON.parse(analysisData.generated_text) : {
+              time_complexity: "코드제출 x",
+              code_style: "코드제출 x",
+            };
+  
+            // Add the result to code analysis
+            setCodeAnalysisResults((prevResults) => [
+              ...prevResults,
+              {
+                test_pass: isTestPass,
+                time_complexity: analysis.time_complexity,
+                code_style: analysis.code_style,
+                execution_time: isTime,
+                memory_usage: isMemo,
+              },
+            ]);
+          } catch (error) {
+            setCodeAnalysisResults((prevResults) => [
+              ...prevResults,
+              {
+                test_pass: "미통과",
+                time_complexity: "코드제출 x",
+                code_style: "코드제출 x",
+                execution_time: "코드제출 x",
+                memory_usage: "코드제출 x",
+              },
+            ]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, [roomCode, currentUser, loading]);
+  
   const escapeCode = (code) => {
-    console.log("Original Code:", code); 
-    const escapedCode = code.replace(/    /g, '\t');  
-    console.log("Escaped Code:", escapedCode); 
-    return escapedCode;
+    return code.replace(/\\n/g, ';').replace(/    /g, "\t").trim();
   };
-
   const renderedCodeAnalysis = useMemo(() => {
     return codeAnalysisResults.map((result, index) => {
-      const testCasePass = result.test_pass || 'N/A';
-      const timeComplexity = result.time_complexity || 'N/A';
-      const codeStyle = result.code_style || 'N/A';
+      // 객체가 아닌 값만 렌더링하도록 처리
+      const testCasePass = result.test_pass || '코드제출x';
+      const timeComplexity = result.time_complexity || '코드제출x';
+      const codeStyle = result.code_style || '코드제출x';
+      const memoryUsage = result.memory_usage || '코드제출x';
   
-      let executionTime = result.execution_time ? result.execution_time.toFixed(2) : '코드실행 x';
-      let memoryUsage = result.memory_usage ? result.memory_usage.toFixed(2) : '코드실행 x'; 
-  
-      if (!result.stdout || result.stdout.trim() === '') {
-        executionTime = '코드실행 x';
-        memoryUsage = '코드실행 x';
-      }
-  
+      // 문자열 변환 또는 속성 선택 (예: time_complexity가 객체일 경우)
       return (
         <div className="lineWrapper" key={index}>
           <div className="num">#{index + 1}</div>
           <div className="line">
             <div className="timeComplex">{timeComplexity}</div>
             <div className="codeStyle">{codeStyle}</div>
-            <div className="memoryUse">{memoryUsage} KB</div>
-            <div className="playTime">{executionTime} ms</div> 
+            <div className="memoryUse">{memoryUsage}</div>
+            <div className="playTime">{result.execution_time}</div>
             <div className="testCase">{testCasePass}</div>
           </div>
         </div>
       );
     });
   }, [codeAnalysisResults]);
+  
+  
 
   return (
     <div className="report">

@@ -315,7 +315,6 @@ import os
 import requests
 
 
-openai.api_key = "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"
 
 class GPTRequest(BaseModel):
     problem: str
@@ -326,16 +325,15 @@ class GPTRequest(BaseModel):
 async def generate_text(request: GPTRequest):
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  
+            model="gpt-4",  
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": (
 f'{request.problem}에 대한 답으로 작성한 코드는 다음과 같습니다: {request.answer}. 이 코드에대한 시간복잡도(빅오표기법)와 코드스타일 정보,테스트케이스 통과여부를 닥셔너리 형식으로 반환해 주세요.'
-'다른 설명이나 주석은 필요 없습니다. 형식 예시: {{ "time_complexity": "", "code_style": "","test_case":""}}. '
-'만약 코드 제출이 없다면 {{"time_complexity": "코드제출 x", "code_style": "코드제출 x","test_case":"미통과"}}.형식으로만 응답하세요.'
-'빅오표기법으로 시간복잡도를 주면 되는데, 테스트케이스가 통과 하지 못하면 미통과라고 적어주면돼'
-'코드스타일은 테스트케이스가 통과하면 ,현재 pep8준수 or pep8미준수(어떤게문제인지) + 해당코드가 어떻게 하면 더 잘 적힐 수 있을지 최소 10단어 이상, 20단어이내로 적어줘.테스트케이스를 통과 하지 못하면 미통과라고 적어줘. 코드제출을 하지 않았다면 코드제출 x라고 써줘'
-'테스트케이스는 네가 임의의 숫자를 넣어서 정답이 잘 나오는지 확인하고 잘 나오면 통과 , 아니면 미통과라고 적어줘.'
+'다른 설명이나 주석은 필요 없습니다. 형식 예시: {{ "time_complexity": "", "code_style": ""}}. '
+'만약 코드 제출이 없다면 {{"time_complexity": "코드제출 x", "code_style": "코드제출 x"}}.형식으로만 응답하세요.'
+'빅오표기법으로 시간복잡도를 주면 되는데'
+'코드스타일은 테스트케이스가 통과하면 ,현재 pep8준수 or pep8미준수(어떤게문제인지) + 해당코드가 어떻게 하면 더 잘 적힐 수 있을지 최소 10단어 이상, 20단어이내로 적어줘.테스트케이스를 통과 하지 못하면 미통과라고 적어줘. 코드제출을 하지 않았다면 코드제출 x라고 써줘 반드시 한글로줘 테스트 케이스 통과이야기는꺼내지마'
   )}
             ],
             max_tokens=request.max_tokens
@@ -374,38 +372,63 @@ async def generate_hint(request: GPTRequest):
         return response.choices[0].message
 
 import subprocess
-import json
-import textwrap
-
-
 class CodeRequest(BaseModel):
     code: str
+import time
+import tempfile
+import tracemalloc
+class CodeInput(BaseModel):
+    code: str
+    input_data: str
 
-@app.post("/execute-code/")
-async def execute_code(request: CodeRequest):
-    print(type(request))
-    input_data = json.dumps({"code": request.code})
-    print(input_data)
+@app.post("/execute-TimeAndResult")
+def execute_code(payload: CodeInput):
+    # 임시 파일에 사용자의 코드를 저장
+    with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_code_file:
+        temp_code_file.write(payload.code.encode('utf-8'))
+        temp_code_file_path = temp_code_file.name
+
     try:
+        # 메모리 추적을 시작하기 전에 메모리 상태를 초기화
+        tracemalloc.start()  # 메모리 추적 시작
+
+        # 실행 시간 측정을 위해 시작 시간 기록
+        start_time = time.perf_counter()
+
+        # subprocess로 Python 스크립트 실행
         result = subprocess.run(
-            ["python", "d.py"],  
-            input=input_data,
+            ["python", temp_code_file_path],  # 실행할 파일 경로
+            input=payload.input_data,  # 입력 데이터를 str 형식으로 전달
             text=True,
-            capture_output=True
+            capture_output=True,
+            timeout=5  # 실행 제한 시간 (초)
         )
 
+        # 실행이 정상적으로 종료되었는지 확인
         if result.returncode != 0:
-            raise HTTPException(status_code=500, detail="Script execution failed")
+            # 실행 중 오류가 발생한 경우
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Execution error: {result.stderr.strip()}"
+            )
 
-        output = result.stdout.strip()
-        result_data = json.loads(output)
+        # 메모리 사용량 측정 (서브프로세스 내부에서 측정)
+        memory_info = tracemalloc.get_traced_memory()  # 메모리 추적
+        tracemalloc.stop()  # 메모리 추적 종료
+
+        current, peak = memory_info  # 현재 메모리 사용량, 최대 메모리 사용량
+        end_time = time.perf_counter()  # 종료 시간 기록
+        execution_time = end_time - start_time  # 실행 시간 계산
 
         return {
-            "stdout": result_data.get("stdout", ""),
-            "error": result_data.get("error", ""),
-            "execution_time": result_data.get("execution_time"),
-            "memory_usage": result_data.get("memory_usage")
+            "output": result.stdout.strip(),  # 출력 결과
+            "execution_time": f"{execution_time:.5f} seconds",  # 실행 시간
+            "memory_used_kb": f"{peak / 1024:.5f} KB",  # 메모리 사용량 (KB 단위)
         }
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+    except subprocess.TimeoutExpired:
+        raise HTTPException(status_code=400, detail="Execution timed out.")
+    finally:
+        # 임시 파일 삭제
+        import os
+        os.remove(temp_code_file_path)

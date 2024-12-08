@@ -21,9 +21,9 @@ function Room({ allowAICodeRecommendation }) {
   const problems = [
     "두 정수 A와 B를 입력받은 다음, A+B를 출력하는 프로그램을 작성하시오.",
     "세 정수 A, B, C를 입력받고, 그 중 가장 큰 값을 출력하는 프로그램을 작성하시오.",
-    "정수 N이 주어질 때, 1부터 N까지의 합을 구하는 프로그램을 작성하시오.",
-    "문자열 S가 주어졌을 때, S의 길이를 출력하는 프로그램을 작성하시오.",
-    "정수 배열 arr가 주어졌을 때, 이 배열의 모든 부분 집합을 출력하는 프로그램을 작성하세요. 배열의 크기 n에 대해 가능한 모든 부분 집합을 생성해야 합니다.\n 부분 집합은 원소의 순서와 관계없이, 배열에 포함된 원소를 선택하거나 선택하지 않는 방식으로 생성됩니다."
+    "두 값을 입력받고, 첫 번째 값을 두 번째 값으로 나눈 몫을 출력하는 프로그램을 작성하시오.",
+    "리스트를 입력받고, 그 중 짝수의 개수를 출력하는 프로그램을 작성하시오.",
+  
   ];
 
   useEffect(() => {
@@ -74,7 +74,7 @@ function Room({ allowAICodeRecommendation }) {
 
   const nextProblem = () => {
     sendCodeToBackend();
-    if (currentProblem < 5) {
+    if (currentProblem < 4) {
       setAIResponse("AI 응답을 기다리는 중");
       setShowAIBox(false);
       setCurrentProblem(currentProblem + 1);
