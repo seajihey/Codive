@@ -88,13 +88,6 @@ Codive(코디브)는 기존 코딩 문제 풀이 플랫폼의 학습 동기 부�
 
 ---
 
-## 🧱 Model ERD
-
-<img width="8192" height="6704" alt="Untitled diagram-2026-01-28-044705" src="https://github.com/user-attachments/assets/07a99ce1-cb77-4a23-b081-eb629c2b3ac3" />
-
-
----
-
 ## 🛠 사용 기술 및 오픈소스
 
 - **FastAPI** : 비동기 웹 서버
